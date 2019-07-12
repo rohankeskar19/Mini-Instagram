@@ -20,10 +20,10 @@ const user = require("./routes/user");
 const post = require("./routes/post");
 
 // PORT
-const port = 3000 | process.env.PORT;
+const port = 5000 | process.env.PORT;
 
-app.use("/api/user/*", user);
-app.use("/api/post/*", post);
+app.use("/api/user/", user);
+app.use("/api/post/", post);
 
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);
