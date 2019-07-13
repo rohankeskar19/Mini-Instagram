@@ -5,6 +5,9 @@ const notification = new mongoose.Schema({
     type: String,
     required: true
   },
+  id: {
+    type: String
+  },
   retrieved: {
     type: Boolean,
     required: true,

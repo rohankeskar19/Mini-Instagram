@@ -31,7 +31,11 @@ const user = new mongoose.Schema({
       type: String
     }
   ],
-
+  likedPosts: [
+    {
+      type: String
+    }
+  ],
   createdAt: {
     type: Date,
     default: Date.now,

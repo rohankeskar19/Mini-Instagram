@@ -337,23 +337,23 @@ Router.put("/follow", Authentication.isAuthenticated, (req, res) => {
                             return res.json({ message: "success" });
                           } else {
                             return res.status(500).json({
-                              error: "Failed to process request (try again)1"
+                              error: "Failed to process request (try again)"
                             });
                           }
                         } else {
                           return res.status(500).json({
-                            error: "Failed to process request (try again)2"
+                            error: "Failed to process request (try again)"
                           });
                         }
                       });
                     } else {
                       return res.status(500).json({
-                        error: "Failed to process request (try again)3"
+                        error: "Failed to process request (try again)"
                       });
                     }
                   } else {
                     return res.status(500).json({
-                      error: "Failed to process request (try again)4"
+                      error: "Failed to process request (try again)"
                     });
                   }
                 }
@@ -610,7 +610,29 @@ Router.get("/notifications", Authentication.isAuthenticated, (req, res) => {
   Notification.find({ user_id: req.user.id }, (err, data) => {
     if (!err) {
       if (data) {
-        return res.json(data);
+        for (var i = 0; i < data.length; i++) {
+          Notification.findByIdAndUpdate(
+            notification[i]._id,
+            { retrieved: true },
+            (err, data) => {
+              if (!err) {
+                if (data) {
+                  if (i == data.length) {
+                    return res.json(data);
+                  }
+                } else {
+                  return res
+                    .status(500)
+                    .json({ error: "Failed to process request (try again)" });
+                }
+              } else {
+                return res
+                  .status(500)
+                  .json({ error: "Failed to process request (try again)" });
+              }
+            }
+          );
+        }
       } else {
         return res
           .status(500)

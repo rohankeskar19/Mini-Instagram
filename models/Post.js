@@ -5,7 +5,7 @@ const post = new mongoose.Schema({
     type: String,
     required: true
   },
-  username: {
+  caption: {
     type: String,
     required: true
   },
@@ -15,23 +15,24 @@ const post = new mongoose.Schema({
   },
   comments: [
     {
-      username: {
-        type: String
+      user_id: {
+        type: String,
+        required: true
       },
       content: {
-        type: String
+        type: String,
+        required: true
       },
       createdAt: {
         type: Date,
         default: Date.now
-      },
-      likes: {
-        type: Number
       }
     }
   ],
   likes: {
-    type: Number
+    type: Number,
+    required: true,
+    default: 0
   },
   createdAt: {
     type: Date,
