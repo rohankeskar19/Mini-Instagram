@@ -5,9 +5,13 @@ const mongoose = require("mongoose");
 const config = require("./config/keys");
 
 // Mongodb connected
-mongoose.connect(config.mongoDBUri, { useNewUrlParser: true }, () => {
-  console.log("Connected to mongo db");
-});
+mongoose.connect(
+  config.mongoDBUri,
+  { useNewUrlParser: true, useFindAndModify: false },
+  () => {
+    console.log("Connected to mongo db");
+  }
+);
 
 const app = express();
 

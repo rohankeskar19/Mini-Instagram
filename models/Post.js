@@ -1,11 +1,15 @@
 const mongoose = require("mongoose");
 
 const post = new mongoose.Schema({
-  userid: {
+  user_id: {
     type: String,
     required: true
   },
-  imageurl: {
+  username: {
+    type: String,
+    required: true
+  },
+  imageUrl: {
     type: String,
     required: true
   },
@@ -28,6 +32,11 @@ const post = new mongoose.Schema({
   ],
   likes: {
     type: Number
+  },
+  createdAt: {
+    type: Date,
+    required: true,
+    default: Date.now
   }
 });
 

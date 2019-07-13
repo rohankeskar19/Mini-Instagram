@@ -23,28 +23,15 @@ const user = new mongoose.Schema({
   },
   followers: [
     {
-      user_id: {
-        type: String,
-        required: true
-      }
+      type: String
     }
   ],
   following: [
     {
-      user_id: {
-        type: String,
-        required: true
-      }
+      type: String
     }
   ],
-  posts: [
-    {
-      postId: {
-        type: String,
-        required: true
-      }
-    }
-  ],
+
   createdAt: {
     type: Date,
     default: Date.now,
