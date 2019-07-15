@@ -11,6 +11,7 @@ validator.validateRegisterData = (
   password,
   password2
 ) => {
+  console.log(email, username, profileUrl, bio, password, password2);
   const errors = {};
   if (email && username && profileUrl && bio && password && password2) {
     if (email.trim() != "") {
@@ -44,15 +45,15 @@ validator.validateRegisterData = (
       errors.bio = "Enter a valid bio";
     }
     if (password.trim() != "") {
-      if (password.length < 6) {
-        errors.password = "Password must be at least 6 characters long";
+      if (password.length < 6 || password.length > 30) {
+        errors.password = "Password must be 6-30 characters long";
       }
     } else {
       errors.password = "Enter a valid password";
     }
     if (password2.trim() != "") {
-      if (password2.length < 6) {
-        errors.password2 = "Password must be at least 6 characters long";
+      if (password2.length < 6 || password2.length > 30) {
+        errors.password2 = "Password must be 6-30 characters long";
       }
     } else {
       errors.password2 = "Enter a valid password";
@@ -89,25 +90,21 @@ validator.validateLoginData = (loginId, password, flag) => {
   const errors = {};
 
   if (flag == 0) {
-    if (loginId && password) {
-      if (loginId.trim() != "") {
-        if (emailRegex.test(loginId)) {
-        } else {
-          errors.email = "Enter a valid email";
-        }
+    if (loginId.trim() != "") {
+      if (emailRegex.test(loginId)) {
       } else {
-        errors.email = "Enter a valid email";
+        errors.loginId = "Enter a valid email";
       }
+    } else {
+      errors.loginId = "Enter a valid email";
     }
   } else {
-    if (loginId && password) {
-      if (loginId.trim() != "") {
-        if (loginId.length < 6 || loginId.length > 32) {
-          errors.username = "Username must be between 6 to 32 characters";
-        }
-      } else {
-        errors.username = "Enter a valid username";
+    if (loginId.trim() != "") {
+      if (loginId.length < 6 || loginId.length > 32) {
+        errors.loginId = "Username must be between 6 to 32 characters";
       }
+    } else {
+      errors.loginId = "Enter a valid username";
     }
   }
 

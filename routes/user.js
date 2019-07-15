@@ -2,6 +2,10 @@ const Router = require("express").Router();
 const bcrypt = require("bcryptjs");
 const jsonwebtoken = require("jsonwebtoken");
 
+const aws = require("aws-sdk");
+const multer = require("multer");
+const multerS3 = require("multer-s3");
+
 const config = require("../config/keys");
 
 const User = require("../models/User");
@@ -10,6 +14,58 @@ const Post = require("../models/Post");
 
 const validator = require("../validators/user");
 const Authentication = require("../middlewares/Authentication");
+
+const fileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === "image/jpeg" ||
+    file.mimetype === "image/jpg" ||
+    file.mimetype === "image/png"
+  ) {
+    cb(null, true);
+  } else {
+    cb(new Error("Invalid mime Type, only JPEG,JPG or PNG"));
+  }
+};
+
+aws.config.update({
+  secretAccessKey: config.secretAccessKey,
+  accessKeyId: config.accesKey,
+  region: "ap-south-1"
+});
+
+const s3 = new aws.S3();
+
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: "min-social-media",
+    fileFilter: fileFilter,
+    acl: "public-read",
+    key: (req, file, cb) => {
+      const arr = file.originalname.split(".");
+      const extension = arr[arr.length - 1];
+      cb(null, Date.now().toString() + "." + extension);
+    }
+  })
+});
+
+const singleUpload = upload.single("profile");
+
+// @route - /api/user/profile-upload
+// @method - POST
+// @access - Public
+// @params - profileImage
+Router.post("/profile-upload", (req, res) => {
+  singleUpload(req, res, err => {
+    if (err) {
+      console.log(err);
+      return res
+        .status(500)
+        .json({ error: "Error while uploading the file try again" });
+    }
+    return res.json({ profileUrl: req.file.location });
+  });
+});
 
 // @route - /api/user/register
 // @method - POST
@@ -34,7 +90,7 @@ Router.post("/register", (req, res) => {
       if (!err) {
         if (data) {
           if (data.length) {
-            return res.status(409).json({ error: "Email id already used" });
+            return res.status(409).json({ email: "Email id already used" });
           } else {
             User.find({ username: username }, (err, data) => {
               if (!err) {
@@ -42,7 +98,7 @@ Router.post("/register", (req, res) => {
                   if (data.length) {
                     return res
                       .status(409)
-                      .json({ error: "Username already used" });
+                      .json({ username: "Username already used" });
                   } else {
                     bcrypt.hash(password, config.saltRounds, (err, hash) => {
                       if (!err) {
@@ -58,6 +114,7 @@ Router.post("/register", (req, res) => {
                           if (!err) {
                             if (user) {
                               const newUser = {
+                                id: user._id,
                                 email: user.email,
                                 username: user.username,
                                 profileUrl: user.profileUrl,
@@ -117,6 +174,7 @@ Router.post("/login", (req, res) => {
   const { email, username, password } = req.body;
 
   if (email) {
+    console.log("hi1");
     const errors = validator.validateLoginData(email, password, 0);
     if (Object.keys(errors).length > 0) {
       return res.status(422).json(errors);
@@ -162,7 +220,7 @@ Router.post("/login", (req, res) => {
                   } else {
                     return res
                       .status(422)
-                      .json({ error: "Invalid credentials" });
+                      .json({ loginId: "Invalid credentials" });
                   }
                 } else {
                   console.log(err);
@@ -172,7 +230,7 @@ Router.post("/login", (req, res) => {
                 }
               });
             } else {
-              return res.status(404).json({ error: "User does not exists" });
+              return res.status(404).json({ loginId: "User does not exists" });
             }
           } else {
             return res
@@ -187,7 +245,7 @@ Router.post("/login", (req, res) => {
       });
     }
   } else {
-    const errors = validator.validateLoginData(email, password, 1);
+    const errors = validator.validateLoginData(username, password, 1);
     if (Object.keys(errors).length > 0) {
       return res.status(422).json(errors);
     } else {
@@ -232,7 +290,7 @@ Router.post("/login", (req, res) => {
                   } else {
                     return res
                       .status(422)
-                      .json({ error: "Invalid credentials" });
+                      .json({ loginId: "Invalid credentials" });
                   }
                 } else {
                   return res
@@ -241,7 +299,7 @@ Router.post("/login", (req, res) => {
                 }
               });
             } else {
-              return res.status(404).json({ error: "User does not exists" });
+              return res.status(404).json({ loginId: "User does not exists" });
             }
           } else {
             return res
@@ -267,32 +325,34 @@ Router.post("/users", Authentication.isAuthenticated, (req, res) => {
 
   if (username) {
     if (username.trim() != "") {
-      User.find({ username: { $regex: ".*" + username } }, (err, data) => {
-        if (!err) {
-          if (data) {
-            const usersArray = [];
-            data.forEach(user => {
-              if (user._id != req.user.id) {
-                const newUser = {
-                  id: user._id,
-                  username: user.username,
-                  profileUrl: user.profileUrl
-                };
-                usersArray.push(newUser);
-              }
-            });
-            return res.json({ users: usersArray });
+      User.find({ username: { $regex: ".*" + username } })
+        .limit(5)
+        .exec((err, data) => {
+          if (!err) {
+            if (data) {
+              const usersArray = [];
+              data.forEach(user => {
+                if (user._id != req.user.id) {
+                  const newUser = {
+                    id: user._id,
+                    username: user.username,
+                    profileUrl: user.profileUrl
+                  };
+                  usersArray.push(newUser);
+                }
+              });
+              return res.json({ users: usersArray });
+            } else {
+              return res
+                .status(500)
+                .json({ error: "Failed to process request (try again)" });
+            }
           } else {
             return res
               .status(500)
               .json({ error: "Failed to process request (try again)" });
           }
-        } else {
-          return res
-            .status(500)
-            .json({ error: "Failed to process request (try again)" });
-        }
-      });
+        });
     } else {
       return res.status(422).json({ error: "Invalid data" });
     }
