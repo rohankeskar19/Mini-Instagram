@@ -82,7 +82,7 @@ export const registerUser = (userData, history) => {
       .then(res => {
         const newUserData = {
           loginId: userData.username,
-          password: userData.password
+          loginPassword: userData.password
         };
         dispatch(loginUserWithUsername(newUserData, history));
       })
