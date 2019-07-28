@@ -259,6 +259,15 @@ body {
   padding: 0;
 }
 
+body::-webkit-scrollbar {
+  width: 0.3rem;
+}
+
+body::-webkit-scrollbar-thumb {
+  background-color: darkgrey;
+  outline: 1px solid slategrey;
+}
+
 .ant-popover-inner-content::-webkit-scrollbar {
   width: 0.3rem;
 }
