@@ -11,7 +11,8 @@ validator.validateRegisterData = (
   password,
   password2
 ) => {
-  console.log(email, username, profileUrl, bio, password, password2);
+  bio = toString(bio);
+
   const errors = {};
   if (email && username && profileUrl && bio && password && password2) {
     if (email.trim() != "") {
@@ -99,21 +100,28 @@ validator.validateLoginData = (loginId, password, flag) => {
       errors.loginId = "Enter a valid email";
     }
   } else {
-    if (loginId.trim() != "") {
-      if (loginId.length < 6 || loginId.length > 32) {
-        errors.loginId = "Username must be between 6 to 32 characters";
+    if (loginId) {
+      if (loginId.trim() != "") {
+        if (loginId.length < 6 || loginId.length > 32) {
+          errors.loginId = "Username must be between 6 to 32 characters";
+        }
+      } else {
+        errors.loginId = "Enter a valid username";
       }
     } else {
       errors.loginId = "Enter a valid username";
     }
   }
-
-  if (password.trim() != "") {
-    if (password.length < 6) {
-      errors.password = "Password must be at least 6 characters long";
+  if (password) {
+    if (password.trim() != "") {
+      if (password.length < 6) {
+        errors.loginPassword = "Password must be at least 6 characters long";
+      }
+    } else {
+      errors.loginPassword = "Enter a valid password";
     }
   } else {
-    errors.password = "Enter a valid password";
+    errors.loginPassword = "Enter a valid password";
   }
 
   return errors;

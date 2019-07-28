@@ -4,8 +4,66 @@ const User = require("../models/User");
 const Post = require("../models/Post");
 const Notification = require("../models/Notification");
 
+const config = require("../config/keys");
+
 const Authentication = require("../middlewares/Authentication");
 const validator = require("../validators/post");
+
+const aws = require("aws-sdk");
+const multer = require("multer");
+const multerS3 = require("multer-s3");
+
+const fileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === "image/jpeg" ||
+    file.mimetype === "image/jpg" ||
+    file.mimetype === "image/png"
+  ) {
+    cb(null, true);
+  } else {
+    cb(new Error("Invalid mime Type, only JPEG,JPG or PNG"));
+  }
+};
+
+aws.config.update({
+  secretAccessKey: config.secretAccessKey,
+  accessKeyId: config.accesKey,
+  region: "ap-south-1"
+});
+
+const s3 = new aws.S3();
+
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: "min-social-media",
+    fileFilter: fileFilter,
+    acl: "public-read",
+    key: (req, file, cb) => {
+      const arr = file.originalname.split(".");
+      const extension = arr[arr.length - 1];
+      cb(null, Date.now().toString() + "." + extension);
+    }
+  })
+});
+
+const singleUpload = upload.single("post");
+
+// @route - /api/post/image-upload
+// @method - POST
+// @access - Private
+// @params - profileImage
+Router.post("/image-upload", Authentication.isAuthenticated, (req, res) => {
+  singleUpload(req, res, err => {
+    if (err) {
+      console.log(err);
+      return res
+        .status(500)
+        .json({ error: "Error while uploading the file try again" });
+    }
+    return res.json({ postImageUrl: req.file.location });
+  });
+});
 
 // @route - /api/post/new
 // @method - POST
@@ -13,7 +71,8 @@ const validator = require("../validators/post");
 // @params - user_id,imageUrl
 Router.post("/new", Authentication.isAuthenticated, (req, res) => {
   const { imageUrl, caption } = req.body;
-
+  var responseSent = false;
+  console.log(req.body);
   if (imageUrl && caption) {
     if (imageUrl.trim() != "" && caption) {
       const errors = validator.validatePostData(imageUrl, caption);
@@ -25,7 +84,9 @@ Router.post("/new", Authentication.isAuthenticated, (req, res) => {
             if (userData) {
               const post = new Post({
                 user_id: userData._id,
-                imageUrl: imageUrl
+                username: userData.username,
+                imageUrl: imageUrl,
+                caption: caption
               });
               post.save((err, postData) => {
                 if (!err) {
@@ -41,31 +102,40 @@ Router.post("/new", Authentication.isAuthenticated, (req, res) => {
                       username: userData.username,
                       profileUrl: userData.profileUrl
                     };
+
                     const { followers } = userData;
-                    for (var i = 0; i < followers.length; i++) {
-                      const notification = new Notification({
-                        user_id: followers[i],
-                        profileUrl: userData.profileUrl,
-                        thumbnailUrl: imageUrl,
-                        title: `${userData.username} created a post`
-                      });
-                      notification.save((err, data) => {
-                        if (!err) {
-                          if (data) {
-                            if (i == followers.length) {
-                              return res.json({ post: response });
+                    if (followers.length > 0) {
+                      console.log("olaaa");
+                      console.log(followers);
+                      for (var i = 0; i < followers.length; i++) {
+                        const notification = new Notification({
+                          user_id: followers[i],
+                          profileUrl: userData.profileUrl,
+                          postImageUrl: imageUrl,
+                          title: `${userData.username} created a post`,
+                          username: userData.username
+                        });
+                        notification.save((err, data) => {
+                          if (!err) {
+                            if (data) {
+                              if (i == followers.length && !responseSent) {
+                                responseSent = true;
+                                return res.json({ post: response });
+                              }
+                            } else {
+                              return res.status(500).json({
+                                error: "Failed to process request (try again)"
+                              });
                             }
                           } else {
                             return res.status(500).json({
                               error: "Failed to process request (try again)"
                             });
                           }
-                        } else {
-                          return res.status(500).json({
-                            error: "Failed to process request (try again)"
-                          });
-                        }
-                      });
+                        });
+                      }
+                    } else {
+                      return res.json({ post: response });
                     }
                   } else {
                     return res
@@ -206,8 +276,10 @@ Router.put("/like", Authentication.isAuthenticated, (req, res) => {
                         id: postData._id,
                         user_id: postData.user_id,
                         profileUrl: userData.profileUrl,
-                        thumbnailUrl: postData.imageUrl,
-                        title: `${userData.username} liked your post`
+                        postImageUrl: postData.imageUrl,
+                        title: `${userData.username} liked your post`,
+                        username: userData.username,
+                        postId: postData._id
                       });
                       notification.save((err, data) => {
                         if (!err) {

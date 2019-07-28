@@ -1,8 +1,12 @@
 import React, { Component } from "react";
-import { Steps, Button, message, Form, Icon, Input, Spin } from "antd";
-import TextAreaComponent from "./TextAreaComponent";
+import { Steps, Button, message, Form, Icon, Input } from "antd";
+import TextAreaComponent from "../../common/TextAreaComponent";
 import Axios from "axios";
 import { withRouter } from "react-router-dom";
+import ReactCrop from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
+import { connect } from "react-redux";
+import { registerUser } from "../../../store/actions/authActions";
 
 const { Step } = Steps;
 
@@ -21,16 +25,68 @@ class Register extends Component {
     profileUrl: "",
     uploading: false,
     creatingAccount: false,
+    crop: null,
+    setCrop: null,
+    fileCropped: false,
+    imagePreviewCanvas: React.createRef(),
     errors: {
-      email: "",
-      username: "",
-      password: "",
-      password2: ""
+      email: this.props.errors.email,
+      username: this.props.errors.username,
+      password: this.props.errors.password,
+      password2: this.props.errors.password2
     }
   };
 
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (prevProps.errors !== this.props.errors) {
+      this.setState(
+        {
+          errors: this.props.errors
+        },
+        () => {
+          this.updateErrors();
+        }
+      );
+    }
+  }
+
+  updateErrors = () => {
+    const { errors } = this.state;
+
+    if (errors.email !== undefined) {
+      this.setState({
+        current: 0,
+        creatingAccount: false
+      });
+    }
+    if (errors.username !== undefined) {
+      this.setState({
+        current: 0,
+        creatingAccount: false
+      });
+    }
+    if (errors.profileUrl !== undefined) {
+      this.setState({
+        current: 1,
+        creatingAccount: false
+      });
+    }
+    if (errors.bio !== undefined) {
+      this.setState({
+        bio: 2,
+        creatingAccount: false
+      });
+    }
+  };
+
+  addEmoji = emoji => {
+    this.setState({
+      bio: this.state.bio.concat(emoji)
+    });
+  };
+
   validateCredentialsInput = () => {
-    const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     const { email, username, password, password2 } = this.state;
 
     if (email.trim() === "") {
@@ -126,9 +182,39 @@ class Register extends Component {
     return true;
   };
 
+  dataURItoBlob = dataURI => {
+    // convert base64/URLEncoded data component to raw binary data held in a string
+    var byteString;
+    if (dataURI.split(",")[0].indexOf("base64") >= 0)
+      byteString = atob(dataURI.split(",")[1]);
+    else byteString = unescape(dataURI.split(",")[1]);
+
+    // separate out the mime component
+    var mimeString = dataURI
+      .split(",")[0]
+      .split(":")[1]
+      .split(";")[0];
+
+    // write the bytes of the string to a typed array
+    var ia = new Uint8Array(byteString.length);
+    for (var i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+
+    return new Blob([ia], { type: mimeString });
+  };
+
   uploadImage = () => {
+    if (!this.state.fileCropped) {
+      message.error("You must crop the file before upload");
+      return;
+    }
+    var image = this.state.imagePreviewCanvas.current.toDataURL("image/png");
+
+    const formImage = this.dataURItoBlob(image);
+
     const formData = new FormData();
-    formData.append("profile", this.state.imageFile);
+    formData.append("profile", formImage);
     try {
       this.setState(
         {
@@ -176,71 +262,15 @@ class Register extends Component {
           creatingAccount: true
         },
         () => {
-          Axios.post("/api/user/register", {
+          const userData = {
             email,
             username,
             password,
             password2,
             profileUrl,
             bio
-          })
-            .then(res => {
-              this.setState(
-                {
-                  creatingAccount: false
-                },
-                () => {
-                  Axios.post("/api/user/login", { username, password })
-                    .then(res => {
-                      const { token } = res.data;
-
-                      localStorage.setItem("user", token);
-
-                      this.props.history.push("/dashboard");
-                    })
-                    .catch(err => {
-                      console.log(err);
-                    });
-                }
-              );
-            })
-            .catch(err => {
-              const error = err.response.data;
-              this.setState({
-                creatingAccount: false
-              });
-              if (
-                typeof error.email !== "undefined" ||
-                typeof error.username !== "undefined"
-              ) {
-                this.setState(
-                  {
-                    current: 0
-                  },
-                  () => {
-                    if (typeof error.email !== "undefined") {
-                      this.setState({
-                        errors: {
-                          email: error.email,
-                          username: this.state.errors.username,
-                          password: this.state.errors.password,
-                          password2: this.state.errors.password2
-                        }
-                      });
-                    } else if (typeof error.username !== "undefined") {
-                      this.setState({
-                        errors: {
-                          email: this.state.errors.email,
-                          username: error.username,
-                          password: this.state.errors.password,
-                          password2: this.state.errors.password2
-                        }
-                      });
-                    }
-                  }
-                );
-              }
-            });
+          };
+          this.props.registerUser(userData, this.props.history);
         }
       );
     } catch (e) {
@@ -263,6 +293,45 @@ class Register extends Component {
   handleChange = e => {
     this.setState({
       [e.target.name]: e.target.value
+    });
+  };
+
+  handleImageCrop = crop => {
+    crop.aspect = 1 / 1;
+    this.setState({
+      crop
+    });
+
+    const canvasRef = this.state.imagePreviewCanvas.current;
+
+    const imgSrc = this.state.imageSource;
+
+    canvasRef.width = crop.width;
+    canvasRef.height = crop.height;
+
+    const ctx = canvasRef.getContext("2d");
+
+    const image = new Image();
+
+    image.src = imgSrc;
+    image.onload = () => {
+      ctx.drawImage(
+        image,
+        crop.x,
+        crop.y,
+        crop.width,
+        crop.height,
+        0,
+        0,
+        crop.width,
+        crop.height
+      );
+    };
+  };
+
+  openFileSelector = e => {
+    this.setState({
+      fileCropped: true
     });
   };
 
@@ -340,19 +409,33 @@ class Register extends Component {
   secondStepContent = () => (
     <div className="imageUpload">
       <div className="imageBox">
+        <input
+          className="fileSelect"
+          type="file"
+          accept="image/*"
+          onChange={this.onChange}
+        />
+
         {this.state.imageSource ? (
           <div className="imageBox1">
-            <input
-              className="fileSelect"
-              type="file"
-              accept="image/*"
-              onChange={this.onChange}
-              style={{ opacity: "0", height: "0px" }}
-            />
-            <img src={this.state.imageSource} className="profileImage" />
+            <h4 className="imageMessage">Drag to crop the image</h4>
+            <div
+              className="imagePreviewContainer"
+              onClick={this.openFileSelector}
+            >
+              <ReactCrop
+                src={this.state.imageSource}
+                className="profileImage"
+                alt="Profile"
+                crop={this.state.crop}
+                onChange={this.handleImageCrop}
+              />
+              <canvas ref={this.state.imagePreviewCanvas} />
+            </div>
+
             {this.state.uploading ? (
               <div className="profileSpinner">
-                <p>Uploading image...(Please Wait)</p>
+                <p className="imageMessage">Uploading image...(Please Wait)</p>
               </div>
             ) : (
               ""
@@ -368,9 +451,7 @@ class Register extends Component {
               style={{ opacity: "0" }}
             />
             <div className="imageMessage">
-              <Icon type="plus" />
-
-              <p>Select an profile image</p>
+              <h4>Select an profile image</h4>
             </div>
           </div>
         )}
@@ -384,6 +465,10 @@ class Register extends Component {
         maxChar={100}
         onTextChange={this.handleChange}
         error={this.state.errors.bio}
+        addEmoji={this.addEmoji}
+        value={this.state.bio}
+        name="bio"
+        placeholder="Enter bio"
       />
     </div>
   );
@@ -488,4 +573,20 @@ class Register extends Component {
 
 const WrappedRegisterForm = Form.create({ name: "register" })(Register);
 
-export default withRouter(WrappedRegisterForm);
+const mapStateToProps = state => {
+  return {
+    errors: state.auth.errors
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    registerUser: (userData, history) =>
+      dispatch(registerUser(userData, history))
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withRouter(WrappedRegisterForm));

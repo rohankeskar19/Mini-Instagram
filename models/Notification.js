@@ -17,12 +17,19 @@ const notification = new mongoose.Schema({
     type: String,
     required: true
   },
-  thumbnailUrl: {
+  postImageUrl: {
     type: String
   },
   title: {
     type: String,
     required: true
+  },
+  username: {
+    type: String,
+    required: true
+  },
+  postId: {
+    type: String
   },
   createdAt: {
     type: Date,
