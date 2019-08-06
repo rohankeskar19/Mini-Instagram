@@ -600,8 +600,8 @@ Router.put("/unfollow", Authentication.isAuthenticated, (req, res) => {
 // @method - GET
 // @access - Public
 // @params - username
-Router.get("/details", (req, res) => {
-  const { username } = req.query;
+Router.get("/details/:username", (req, res) => {
+  const { username } = req.params;
   console.log(username);
   if (username) {
     if (username.trim() != "") {

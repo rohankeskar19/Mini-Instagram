@@ -18,7 +18,7 @@ export const setCurrentUser = history => {
     setAuthToken(token);
     const decoded = jwtDecode(token);
 
-    Axios.get(`/api/user/details/?username=${decoded.username}`)
+    Axios.get(`/api/user/details/${decoded.username}`)
       .then(res => {
         dispatch({ type: "SET_CURRENT_USER", payload: res.data.user });
         dispatch({
