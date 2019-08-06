@@ -4,7 +4,7 @@ import jwtDecode from "jwt-decode";
 
 export const getUserDetails = username => {
   return (dispatch, getState) => {
-    Axios.get(`/api/user/details/?username=${username}`)
+    Axios.get(`/api/user/details/${username}`)
       .then(res => {
         dispatch({ type: "GET_USER_DETAILS", payload: res.data.user });
       })
