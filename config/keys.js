@@ -1,8 +1,5 @@
-module.exports = {
-  mongoDBUri: "mongodb://localhost/minisocialmedia",
-  saltRounds: 10,
-  secret: "ahsfk1924usnfjkhafs194y!#$!@39r214nsf",
-  tokenDuration: "1h",
-  accesKey: "AKIAJWWK3YNANWHHY27A",
-  secretAccessKey: "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"
-};
+if (process.env.NODE_ENV === "production") {
+  module.exports = require("./production");
+} else {
+  module.exports = require("./dev");
+}
