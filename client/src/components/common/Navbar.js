@@ -215,6 +215,7 @@ class Navbar extends Component {
       errors
     } = this.state;
     const { getFieldDecorator, getFieldsError } = this.props.form;
+    console.log(user);
 
     const authenticatedUi = (
       <div className="navBar__signedIn">
