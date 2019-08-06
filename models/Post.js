@@ -27,12 +27,22 @@ const post = new mongoose.Schema({
         type: String,
         required: true
       },
+
+      username: {
+        type: String,
+        required: true
+      },
+      profileUrl: {
+        type: String,
+        required: true
+      },
       createdAt: {
         type: Date,
         default: Date.now
       }
     }
   ],
+
   likes: {
     type: Number,
     required: true,

@@ -114,7 +114,7 @@ class TextAreaComponent extends Component {
 
   render() {
     return (
-      <div className="textAreaComponent">
+      <div className={this.props.className}>
         <Icon
           type="smile"
           onClick={this.toggleEmojiPicker}

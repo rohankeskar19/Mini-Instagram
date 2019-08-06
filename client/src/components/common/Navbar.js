@@ -87,7 +87,15 @@ class Navbar extends Component {
         },
         () => {
           if (this.state.isAuthenticated) {
-            this.props.fetchNotifications();
+            this.setState(
+              {
+                loginId: "",
+                loginPassword: ""
+              },
+              () => {
+                this.props.fetchNotifications();
+              }
+            );
           }
         }
       );
@@ -127,6 +135,7 @@ class Navbar extends Component {
   };
 
   handleLoginChange = e => {
+    console.log(e.target.value);
     if (e.target.value !== "") {
       this.setState({
         [e.target.name]: e.target.value
@@ -169,6 +178,9 @@ class Navbar extends Component {
   };
 
   logoutUser = () => {
+    this.setState({
+      searchField: ""
+    });
     this.props.logoutUser(this.props.history);
   };
 
@@ -179,12 +191,12 @@ class Navbar extends Component {
 
     const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
+    console.log(loginId, loginPassword);
+
     const userData = {
       loginId,
       loginPassword
     };
-
-    console.log(this.state);
 
     if (emailRegex.test(loginId)) {
       this.props.loginUserWithEmail(userData, this.props.history);
@@ -211,56 +223,60 @@ class Navbar extends Component {
 
     const authenticatedUi = (
       <div className="navBar__signedIn">
-        <div className="navContainer">
-          <AutoComplete
-            dataSource={searchResult.map(renderOption)}
-            className="searchField"
-            onSearch={this.handleChange}
-            onSelect={this.onSelect}
-            optionLabelProp="text"
+        <AutoComplete
+          dataSource={searchResult.map(renderOption)}
+          className="searchField"
+          onSearch={this.handleChange}
+          onSelect={this.onSelect}
+          optionLabelProp="text"
+        >
+          <Input
+            suffix={<Icon type="search" className="certain-category-icon" />}
+          />
+        </AutoComplete>
+        <div className="profileContainer">
+          <Link to="/post/new" className="newPostBtn">
+            <Button>
+              <Icon type="plus" />
+            </Button>
+          </Link>
+
+          <Popover
+            className="notificationsPopover"
+            placement="bottom"
+            trigger="click"
+            content={
+              notificationsLoading ? (
+                <Icon type="loading" />
+              ) : (
+                <NotificationsList notifications={notifications} />
+              )
+            }
           >
-            <Input
-              suffix={<Icon type="search" className="certain-category-icon" />}
-            />
-          </AutoComplete>
-          <div className="profileContainer">
-            <Popover
-              className="notificationsPopover"
-              placement="bottom"
-              trigger="click"
-              content={
-                notificationsLoading ? (
-                  <Icon type="loading" />
-                ) : (
-                  <NotificationsList notifications={notifications} />
-                )
-              }
+            <Badge
+              count={notificationsLength > 0 ? notificationsLength : ""}
+              className="notifications"
+              onClick={this.getNotifications}
             >
-              <Badge
-                count={notificationsLength > 0 ? notificationsLength : ""}
-                className="notifications"
-                onClick={this.getNotifications}
-              >
-                <Icon type="bell" className="bellicon" />
-              </Badge>
-            </Popover>
-            <Link to={`/user/${user.username}`}>
-              <Tooltip placement="bottom" title={"Your account"}>
-                <img
-                  src={user.profileUrl}
-                  alt="profile"
-                  className="navBar__profile"
-                />
-              </Tooltip>
-            </Link>
-            <Tooltip title="Log out" placement="bottom">
-              <Icon
-                type="logout"
-                className="navbarLogout"
-                onClick={this.logoutUser}
+              <Icon type="bell" className="bellicon" />
+            </Badge>
+          </Popover>
+          <Link to={`/user/${user.username}`}>
+            <Tooltip placement="bottom" title={"Your account"}>
+              <img
+                src={user.profileUrl}
+                alt="profile"
+                className="navBar__profile"
               />
             </Tooltip>
-          </div>
+          </Link>
+          <Tooltip title="Log out" placement="bottom">
+            <Icon
+              type="logout"
+              className="navbarLogout"
+              onClick={this.logoutUser}
+            />
+          </Tooltip>
         </div>
       </div>
     );
@@ -269,14 +285,15 @@ class Navbar extends Component {
       <Form.Item className="navBar">
         <Form layout="inline" onSubmit={this.handleSubmit}>
           <Form.Item
-            validateStatus={
-              errors.loginId || errors.loginPassword ? "error" : ""
-            }
+            validateStatus={errors.loginId ? "error" : ""}
             help={errors.loginId || ""}
           >
-            {getFieldDecorator("username", {
+            {getFieldDecorator("loginId", {
               rules: [
-                { required: true, message: "Please input your username!" }
+                {
+                  required: true,
+                  message: "Please input your Email or username!"
+                }
               ]
             })(
               <Input
@@ -290,9 +307,7 @@ class Navbar extends Component {
             )}
           </Form.Item>
           <Form.Item
-            validateStatus={
-              errors.loginPassword || errors.loginId ? "error" : ""
-            }
+            validateStatus={errors.loginPassword ? "error" : ""}
             help={errors.loginPassword || ""}
           >
             {getFieldDecorator("password", {

@@ -8,7 +8,7 @@ const NotificationsList = ({ notifications }) => {
           key={notification._id}
           profileUrl={notification.profileUrl}
           title={notification.title}
-          thumbnailUrl={notification.thumbnailUrl}
+          postImageUrl={notification.postImageUrl}
           createdAt={notification.createdAt}
           username={notification.username}
           postId={notification.postId}

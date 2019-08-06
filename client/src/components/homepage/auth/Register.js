@@ -298,35 +298,46 @@ class Register extends Component {
 
   handleImageCrop = crop => {
     crop.aspect = 1 / 1;
+    this.setState(
+      {
+        crop
+      },
+      () => {
+        console.log(this.state.crop);
+        const canvasRef = this.state.imagePreviewCanvas.current;
+
+        const imgSrc = this.state.imageSource;
+
+        canvasRef.width = crop.width;
+        canvasRef.height = crop.height;
+
+        const ctx = canvasRef.getContext("2d");
+
+        const image = new Image();
+
+        image.src = imgSrc;
+        image.onload = () => {
+          ctx.drawImage(
+            image,
+            crop.x,
+            crop.y,
+            crop.width,
+            crop.height,
+            0,
+            0,
+            crop.width,
+            crop.height
+          );
+        };
+      }
+    );
+  };
+
+  handleOnCropComplete = (crop, pixelCrop) => {
     this.setState({
-      crop
+      crop: crop
     });
-
-    const canvasRef = this.state.imagePreviewCanvas.current;
-
-    const imgSrc = this.state.imageSource;
-
-    canvasRef.width = crop.width;
-    canvasRef.height = crop.height;
-
-    const ctx = canvasRef.getContext("2d");
-
-    const image = new Image();
-
-    image.src = imgSrc;
-    image.onload = () => {
-      ctx.drawImage(
-        image,
-        crop.x,
-        crop.y,
-        crop.width,
-        crop.height,
-        0,
-        0,
-        crop.width,
-        crop.height
-      );
-    };
+    console.log(pixelCrop);
   };
 
   openFileSelector = e => {
@@ -429,8 +440,12 @@ class Register extends Component {
                 alt="Profile"
                 crop={this.state.crop}
                 onChange={this.handleImageCrop}
+                onComplete={this.handleOnCropComplete}
               />
-              <canvas ref={this.state.imagePreviewCanvas} />
+              <canvas
+                ref={this.state.imagePreviewCanvas}
+                style={{ display: "none" }}
+              />
             </div>
 
             {this.state.uploading ? (
@@ -469,6 +484,7 @@ class Register extends Component {
         value={this.state.bio}
         name="bio"
         placeholder="Enter bio"
+        className="textAreaComponent"
       />
     </div>
   );

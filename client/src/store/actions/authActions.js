@@ -99,5 +99,6 @@ export const logoutUser = history => {
     history.push("/home-page");
     dispatch({ type: "LOGOUT_USER" });
     dispatch({ type: "CLEAR_USER" });
+    dispatch({ type: "CLEAR_POST_DATA" });
   };
 };

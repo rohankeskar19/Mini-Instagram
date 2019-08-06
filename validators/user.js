@@ -106,9 +106,11 @@ validator.validateLoginData = (loginId, password, flag) => {
           errors.loginId = "Username must be between 6 to 32 characters";
         }
       } else {
+        console.log(loginId);
         errors.loginId = "Enter a valid username";
       }
     } else {
+      console.log(loginId);
       errors.loginId = "Enter a valid username";
     }
   }

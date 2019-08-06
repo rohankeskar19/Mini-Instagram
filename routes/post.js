@@ -164,63 +164,37 @@ Router.post("/new", Authentication.isAuthenticated, (req, res) => {
   }
 });
 
-// @route - /api/post/postdata
+// @route - /api/post/:postId
 // @method - GET
 // @access - Public
 // @params - postId
-Router.get("/postdata", (req, res) => {
-  const { postId } = req.body;
-
+Router.get("/:postId", (req, res) => {
+  const { postId } = req.params;
+  console.log(postId);
   if (postId) {
     if (postId.trim() != "") {
       Post.findById(postId, (err, postData) => {
         if (!err) {
           if (postData) {
+            console.log(postData);
             User.findById(postData.user_id, (err, userData) => {
               if (!err) {
                 if (userData) {
+                  console.log(userData);
                   const { comments } = postData;
-                  const commentsToSend = [];
-
-                  for (var i = 0; i < comments.length; i++) {
-                    User.findById(comments[i].user_id, (err, data) => {
-                      if (!err) {
-                        if (data) {
-                          const newComment = {
-                            user_id: data._id,
-                            username: data.username,
-                            profileUrl: data.profileUrl,
-                            createdAt: comments[i].createdAt,
-                            id: comments[i]._id,
-                            content: comments[i].content
-                          };
-                          commentsToSend.push(newComment);
-                          if (i == comments.length) {
-                            const response = {
-                              id: postData._id,
-                              imageUrl: postData.imageUrl,
-                              caption: postData.caption,
-                              user_id: postData.user_id,
-                              comments: commentsToSend,
-                              likes: postData.likes,
-                              createdAt: postData.createdAt,
-                              username: userData.username,
-                              profileUrl: userData.profileUrl
-                            };
-                            return res.json({ post: response });
-                          }
-                        } else {
-                          return res.status(500).json({
-                            error: "Failed to process request (try again)"
-                          });
-                        }
-                      } else {
-                        return res.status(500).json({
-                          error: "Failed to process request (try again)"
-                        });
-                      }
-                    });
-                  }
+                  comments.reverse();
+                  const response = {
+                    id: postData._id,
+                    imageUrl: postData.imageUrl,
+                    caption: postData.caption,
+                    user_id: postData.user_id,
+                    comments: comments,
+                    likes: postData.likes,
+                    createdAt: postData.createdAt,
+                    username: userData.username,
+                    profileUrl: userData.profileUrl
+                  };
+                  return res.json({ post: response });
                 } else {
                   return res
                     .status(500)
@@ -272,30 +246,34 @@ Router.put("/like", Authentication.isAuthenticated, (req, res) => {
                 (err, userData) => {
                   if (!err) {
                     if (userData) {
-                      const notification = new Notification({
-                        id: postData._id,
-                        user_id: postData.user_id,
-                        profileUrl: userData.profileUrl,
-                        postImageUrl: postData.imageUrl,
-                        title: `${userData.username} liked your post`,
-                        username: userData.username,
-                        postId: postData._id
-                      });
-                      notification.save((err, data) => {
-                        if (!err) {
-                          if (data) {
-                            return res.json({ postId: postId });
+                      if (postData.username !== userData.username) {
+                        const notification = new Notification({
+                          id: postData._id,
+                          user_id: postData.user_id,
+                          profileUrl: userData.profileUrl,
+                          postImageUrl: postData.imageUrl,
+                          title: `${userData.username} liked your post`,
+                          username: userData.username,
+                          postId: postData._id
+                        });
+                        notification.save((err, data) => {
+                          if (!err) {
+                            if (data) {
+                              return res.json({ postId: postId });
+                            } else {
+                              return res.status(500).json({
+                                error: "Failed to process request (try again)"
+                              });
+                            }
                           } else {
                             return res.status(500).json({
                               error: "Failed to process request (try again)"
                             });
                           }
-                        } else {
-                          return res.status(500).json({
-                            error: "Failed to process request (try again)"
-                          });
-                        }
-                      });
+                        });
+                      } else {
+                        return res.json({ postId: postId });
+                      }
                     } else {
                       return res.status(500).json({
                         error: "Failed to process request (try again)"
@@ -337,34 +315,74 @@ Router.put("/unlike", Authentication.isAuthenticated, (req, res) => {
 
   if (postId) {
     if (postId.trim() != "") {
-      Post.findByIdAndUpdate(postId, { $dec: { likes: -1 } }, (err, data) => {
+      Post.findById(postId, (err, data) => {
         if (!err) {
           if (data) {
-            User.findByIdAndUpdate(
-              req.user.id,
-              { $pull: { likedPosts: postId } },
-              (err, data) => {
-                if (!err) {
-                  if (data) {
-                    return res.json({ postId: postId });
-                  } else {
-                    return res
-                      .status(500)
-                      .json({ error: "Failed to process request (try again)" });
-                  }
+            if (data.likes > 0) {
+              data.likes -= 1;
+            }
+
+            data.save((err, data) => {
+              if (!err) {
+                if (data) {
+                  console.log(data);
+                  User.findById(req.user.id, (err, data) => {
+                    if (!err) {
+                      if (data) {
+                        const { likedPosts } = data;
+
+                        const index = likedPosts.indexOf(postId);
+                        likedPosts.splice(index, 1);
+
+                        data.likedPosts = likedPosts;
+                        console.log(data);
+                        data.save((err, data) => {
+                          if (!err) {
+                            if (data) {
+                              console.log(data);
+                              return res.json({ postId: postId });
+                            } else {
+                              console.log("ola");
+                              return res.status(500).json({
+                                error: "Failed to process request (try again)"
+                              });
+                            }
+                          } else {
+                            console.log(err);
+                            return res.status(500).json({
+                              error: "Failed to process request (try again)"
+                            });
+                          }
+                        });
+                      }
+                    } else {
+                      console.log(err);
+                      return res.status(500).json({
+                        error: "Failed to process request (try again)"
+                      });
+                    }
+                  });
                 } else {
-                  return res
-                    .status(500)
-                    .json({ error: "Failed to process request (try again)" });
+                  console.log("ola2");
+                  return res.status(500).json({
+                    error: "Failed to process request (try again)"
+                  });
                 }
+              } else {
+                console.log("ola3");
+                return res.status(500).json({
+                  error: "Failed to process request (try again)"
+                });
               }
-            );
+            });
           } else {
+            console.log("ola4");
             return res
               .status(500)
               .json({ error: "Failed to process request (try again)" });
           }
         } else {
+          console.log("ola5");
           return res
             .status(500)
             .json({ error: "Failed to process request (try again)" });
@@ -387,17 +405,39 @@ Router.post("/comment", Authentication.isAuthenticated, (req, res) => {
 
   if (postId && comment_content) {
     if (postId.trim() != "" && comment_content.trim() != "") {
-      const comment = {
-        user_id: req.user.id,
-        content: comment_content
-      };
-      Post.findByIdAndUpdate(
-        postId,
-        { $push: { comments: comment } },
-        (err, data) => {
+      if (comment_content.length > 400 || comment_content.length < 10) {
+        return res
+          .status(422)
+          .json({ error: "comment should be between 10-400 characteres long" });
+      } else {
+        User.findById(req.user.id, (err, data) => {
           if (!err) {
             if (data) {
-              return res.json(data);
+              const comment = {
+                user_id: req.user.id,
+                content: comment_content,
+                username: data.username,
+                profileUrl: data.profileUrl
+              };
+              Post.findByIdAndUpdate(
+                postId,
+                { $push: { comments: comment } },
+                (err, data) => {
+                  if (!err) {
+                    if (data) {
+                      return res.json(comment);
+                    } else {
+                      return res.status(500).json({
+                        error: "Failed to process request (try again)"
+                      });
+                    }
+                  } else {
+                    return res
+                      .status(500)
+                      .json({ error: "Failed to process request (try again)" });
+                  }
+                }
+              );
             } else {
               return res
                 .status(500)
@@ -408,9 +448,39 @@ Router.post("/comment", Authentication.isAuthenticated, (req, res) => {
               .status(500)
               .json({ error: "Failed to process request (try again)" });
           }
-        }
-      );
+        });
+      }
     }
+  } else {
+    return res.status(422).json({ error: "Invalid request" });
+  }
+});
+
+// @route - /api/post/comments/:postId
+// @method - GET
+// @access - Private
+// @params - postId
+Router.get("/comments/:postId", Authentication.isAuthenticated, (req, res) => {
+  const { postId } = req.params;
+
+  if (postId) {
+    Post.findById(postId, (err, data) => {
+      if (!err) {
+        if (data) {
+          const { comments } = data;
+
+          return res.json(comments);
+        } else {
+          return res
+            .status(500)
+            .json({ error: "Failed to process request (try again)" });
+        }
+      } else {
+        return res
+          .status(500)
+          .json({ error: "Failed to process request (try again)" });
+      }
+    });
   } else {
     return res.status(422).json({ error: "Invalid request" });
   }

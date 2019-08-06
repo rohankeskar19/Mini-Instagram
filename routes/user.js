@@ -674,110 +674,6 @@ Router.get("/details", (req, res) => {
   }
 });
 
-// @route - /api/user/followers
-// @method - GET
-// @access - Public
-// @params - user_id
-Router.get("/followers", (req, res) => {
-  const { user_id } = req.params;
-  console.log(req.params);
-  console.log(user_id);
-  User.findById(user_id, (err, data) => {
-    if (!err) {
-      if (data) {
-        const { followers } = data;
-
-        User.find({ _id: { $in: followers } }, (err, data) => {
-          if (!err) {
-            if (data) {
-              if (data.length) {
-                const response = [];
-                data.forEach(user => {
-                  const userResponse = {
-                    username: user.username,
-                    profileUrl: user.profileUrl,
-                    id: user._id
-                  };
-                  response.push(userResponse);
-                });
-                return res.json(response);
-              } else {
-                return res.json(data);
-              }
-            } else {
-            }
-          } else {
-            return res
-              .status(500)
-              .json({ error: "Failed to process request (try again)" });
-          }
-        });
-      } else {
-        return res
-          .status(500)
-          .json({ error: "Failed to process request (try again)" });
-      }
-    } else {
-      return res
-        .status(500)
-        .json({ error: "Failed to process request (try again)" });
-    }
-  });
-});
-
-// @route - /api/user/following
-// @method - GET
-// @access - Public
-// @params - user_id
-Router.get("/following", (req, res) => {
-  const { user_id } = req.body;
-
-  User.findById(user_id, (err, data) => {
-    if (!err) {
-      if (data) {
-        const { following } = data;
-
-        User.find({ _id: { $in: following } }, (err, data) => {
-          if (!err) {
-            if (data) {
-              if (data.length) {
-                const response = [];
-                data.forEach(user => {
-                  const userResponse = {
-                    username: user.username,
-                    profileUrl: user.profileUrl,
-                    id: user._id
-                  };
-                  response.push(userResponse);
-                });
-                return res.json(response);
-              } else {
-                return res.json(data);
-              }
-            } else {
-              return res
-                .status(500)
-                .json({ error: "Failed to process request (try again)" });
-            }
-          } else {
-            return res
-              .status(500)
-              .json({ error: "Failed to process request (try again)" });
-          }
-        });
-      } else {
-        return res
-          .status(500)
-          .json({ error: "Failed to process request (try again)" });
-      }
-    } else {
-      return res
-        .status(500)
-        .json({ error: "Failed to process request (try again)" });
-    }
-  });
-});
-
 // @route - /api/user/notifications
 // @method - GET
 // @access - Private
@@ -837,22 +733,52 @@ Router.get("/notifications", Authentication.isAuthenticated, (req, res) => {
 Router.get("/feed", Authentication.isAuthenticated, (req, res) => {
   const userId = req.user.id;
   var responseSent = false;
-  User.findById(userId, (err, userData) => {
-    if (!err) {
-      if (userData) {
-        const following = userData.following;
-        const postsArray = [];
-
-        for (var i = 0; i < following.length; i++) {
-          Post.find({ user_id: following[i] }, (err, data) => {
-            if (i == following.length && !responseSent) {
-              responseSent = true;
-              return res.json({ data: postsArray });
-            }
+  var postsArray = [];
+  Post.find({ user_id: req.user.id })
+    .sort({ createdAt: -1 })
+    .exec((err, data) => {
+      if (!err) {
+        if (data) {
+          if (data.length > 0) {
+            data.forEach(post => {
+              postsArray.push(post);
+            });
+          }
+          User.findById(userId, (err, userData) => {
             if (!err) {
-              if (data) {
-                if (data.length > 0) {
-                  postsArray.push(data);
+              if (userData) {
+                const following = userData.following;
+                if (following.length > 0) {
+                  for (var i = 0; i < following.length; i++) {
+                    Post.find({ user_id: following[i] })
+                      .sort({ createdAt: -1 })
+                      .exec((err, data) => {
+                        if (!err) {
+                          if (data) {
+                            if (data.length > 0) {
+                              data.forEach(post => {
+                                postsArray.push(post);
+                              });
+                            }
+                          } else {
+                            return res.status(500).json({
+                              error: "Failed to process request (try again)"
+                            });
+                          }
+                        } else {
+                          return res.status(500).json({
+                            error: "Failed to process request (try again)"
+                          });
+                        }
+                        if (i == following.length && !responseSent) {
+                          responseSent = true;
+
+                          return res.json({ feed: postsArray });
+                        }
+                      });
+                  }
+                } else {
+                  return res.json({ feed: postsArray });
                 }
               } else {
                 return res
@@ -865,19 +791,17 @@ Router.get("/feed", Authentication.isAuthenticated, (req, res) => {
                 .json({ error: "Failed to process request (try again)" });
             }
           });
+        } else {
+          return res
+            .status(500)
+            .json({ error: "Failed to process request (try again)" });
         }
       } else {
         return res
           .status(500)
           .json({ error: "Failed to process request (try again)" });
       }
-    } else {
-      console.log("Ola amigo3");
-      return res
-        .status(500)
-        .json({ error: "Failed to process request (try again)" });
-    }
-  });
+    });
 });
 
 // @route - /api/user/post-details

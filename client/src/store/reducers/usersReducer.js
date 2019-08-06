@@ -10,6 +10,9 @@ const initialState = {
 };
 
 const usersReducer = (state = initialState, action) => {
+  const userData = state.userData;
+  const userDetails = state.userDetails;
+  const likedPosts = state.userData.likedPosts;
   switch (action.type) {
     case "GET_USER_DETAILS":
       return {
@@ -44,8 +47,6 @@ const usersReducer = (state = initialState, action) => {
         unfollowingUser: true
       };
     case "FOLLOWED_USER":
-      const userData = state.userData;
-      const userDetails = state.userDetails;
       userDetails.followers_count += 1;
       userData.following.push(action.payload);
 
@@ -56,15 +57,31 @@ const usersReducer = (state = initialState, action) => {
         userDetails: userDetails
       };
     case "UNFOLLOWED_USER":
-      const userData1 = state.userData;
-      const index = userData1.following.indexOf(action.payload);
-      userData1.following.splice(index, 1);
-      const userDetails1 = state.userDetails;
-      userDetails1.followers_count -= 1;
+      const index = userData.following.indexOf(action.payload);
+      userData.following.splice(index, 1);
+
+      userDetails.followers_count -= 1;
       return {
         ...state,
         unfollowingUser: false,
-        userData: userData1
+        userData: userData,
+        userDetails: userDetails
+      };
+    case "LIKED_POST":
+      likedPosts.push(action.payload);
+
+      return {
+        ...state,
+        likedPosts: likedPosts
+      };
+    case "UNLIKED_POST":
+      const index1 = likedPosts.indexOf(action.payload);
+
+      likedPosts.splice(index1, 1);
+
+      return {
+        ...state,
+        likedPosts: likedPosts
       };
     case "CLEAR_USER":
       return initialState;
