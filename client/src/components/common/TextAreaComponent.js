@@ -30,7 +30,6 @@ class TextAreaComponent extends Component {
       stringUptoLimit: e.target.value
     });
     if (length + 1 > this.state.maxChar) {
-      console.log("olaaaaaa");
       e.target.value = this.state.stringUptoLimit;
       this.setState({
         disabled: true
@@ -92,9 +91,7 @@ class TextAreaComponent extends Component {
 
   handleBackSpace = e => {
     const keyCode = e.keyCode;
-    console.log("called back");
     if (this.state.disabled && keyCode === 8) {
-      console.log("called back space");
       this.setState(
         {
           stringUptoLimit: this.state.stringUptoLimit.slice(

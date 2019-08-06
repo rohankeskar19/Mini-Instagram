@@ -90,7 +90,6 @@ class Register extends Component {
     const { email, username, password, password2 } = this.state;
 
     if (email.trim() === "") {
-      console.log("error");
       this.setState({
         errors: {
           email: "Please enter an email",
@@ -236,9 +235,7 @@ class Register extends Component {
                 }
               );
             })
-            .catch(err => {
-              console.log(err);
-            });
+            .catch(err => {});
         }
       );
     } catch (e) {
@@ -305,7 +302,6 @@ class Register extends Component {
         crop
       },
       () => {
-        console.log(this.state.crop);
         const canvasRef = this.state.imagePreviewCanvas.current;
 
         const imgSrc = this.state.imageSource;
@@ -339,7 +335,6 @@ class Register extends Component {
     this.setState({
       crop: crop
     });
-    console.log(pixelCrop);
   };
 
   openFileSelector = e => {

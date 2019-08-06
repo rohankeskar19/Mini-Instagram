@@ -8,9 +8,7 @@ export const getUserDetails = username => {
       .then(res => {
         dispatch({ type: "GET_USER_DETAILS", payload: res.data.user });
       })
-      .catch(err => {
-        console.log(err);
-      });
+      .catch(err => {});
   };
 };
 
@@ -34,9 +32,7 @@ export const setCurrentUser = history => {
 
         history.push("/");
       })
-      .catch(err => {
-        console.log(err);
-      });
+      .catch(err => {});
   };
 };
 
@@ -64,9 +60,7 @@ export const fetchNotifications = () => {
           }
         });
       })
-      .catch(err => {
-        console.log(err);
-      });
+      .catch(err => {});
   };
 };
 
@@ -77,9 +71,7 @@ export const followUser = userId => {
       .then(res => {
         dispatch({ type: "FOLLOWED_USER", payload: res.data.user_id });
       })
-      .catch(err => {
-        console.log(err);
-      });
+      .catch(err => {});
   };
 };
 
@@ -90,8 +82,6 @@ export const unfollowUser = userId => {
       .then(res => {
         dispatch({ type: "UNFOLLOWED_USER", payload: res.data.user_id });
       })
-      .catch(err => {
-        console.log(err);
-      });
+      .catch(err => {});
   };
 };

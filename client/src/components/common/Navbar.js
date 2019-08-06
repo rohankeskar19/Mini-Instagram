@@ -135,7 +135,6 @@ class Navbar extends Component {
   };
 
   handleLoginChange = e => {
-    console.log(e.target.value);
     if (e.target.value !== "") {
       this.setState({
         [e.target.name]: e.target.value
@@ -151,9 +150,7 @@ class Navbar extends Component {
             searchResult: res.data.users
           });
         })
-        .catch(err => {
-          console.log(err);
-        });
+        .catch(err => {});
     }
   };
 
@@ -190,8 +187,6 @@ class Navbar extends Component {
     const { loginId, loginPassword } = this.state;
 
     const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-
-    console.log(loginId, loginPassword);
 
     const userData = {
       loginId,

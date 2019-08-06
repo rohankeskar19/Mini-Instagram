@@ -14,9 +14,7 @@ export const createPost = postData => {
 
         dispatch({ type: "ADD_POST", payload: res.data.post });
       })
-      .catch(err => {
-        console.log(err);
-      });
+      .catch(err => {});
   };
 };
 
@@ -46,12 +44,9 @@ export const fetchFeed = () => {
           }
         }
 
-        console.log(feed);
         dispatch({ type: "FETCH_FEED", payload: feed });
       })
-      .catch(err => {
-        console.log(err);
-      });
+      .catch(err => {});
   };
 };
 
@@ -70,9 +65,7 @@ export const likePost = postId => {
         dispatch({ type: "UPDATE_FEED", payload: feed });
         dispatch({ type: "LIKED_POST", payload: res.data.postId });
       })
-      .catch(err => {
-        console.log(err);
-      });
+      .catch(err => {});
   };
 };
 
@@ -91,9 +84,7 @@ export const unlikePost = postId => {
         dispatch({ type: "UPDATE_FEED", payload: feed });
         dispatch({ type: "UNLIKED_POST", payload: res.data.postId });
       })
-      .catch(err => {
-        console.log(err);
-      });
+      .catch(err => {});
   };
 };
 
@@ -111,9 +102,7 @@ export const getPostData = postId => {
 
         dispatch({ type: "GET_POST_DATA", payload: res.data.post });
       })
-      .catch(err => {
-        console.log(err);
-      });
+      .catch(err => {});
   };
 };
 
@@ -132,9 +121,7 @@ export const addComment = (postId, comment) => {
           }
         });
       })
-      .catch(err => {
-        console.log(err);
-      });
+      .catch(err => {});
   };
 };
 
@@ -151,9 +138,7 @@ export const refreshComments = postId => {
           }
         });
       })
-      .catch(err => {
-        console.log(err);
-      });
+      .catch(err => {});
   };
 };
 

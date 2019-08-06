@@ -5,13 +5,11 @@ import { setCurrentUser } from "./usersActions";
 
 export const loginUserWithEmail = (userData, history) => {
   return (dispatch, getState) => {
-    console.log(userData);
     Axios.post("/api/user/login", {
       email: userData.loginId,
       password: userData.loginPassword
     })
       .then(res => {
-        console.log(res);
         const { token } = res.data;
 
         localStorage.setItem("user", token);
@@ -31,7 +29,6 @@ export const loginUserWithEmail = (userData, history) => {
         setCurrentUser(history);
       })
       .catch(err => {
-        console.log(err.response);
         dispatch({ type: "GET_ERRORS", payload: err.response.data });
       });
   };
@@ -39,7 +36,6 @@ export const loginUserWithEmail = (userData, history) => {
 
 export const loginUserWithUsername = (userData, history) => {
   return (dispatch, getState) => {
-    console.log(userData);
     Axios.post("/api/user/login", {
       username: userData.loginId,
       password: userData.loginPassword

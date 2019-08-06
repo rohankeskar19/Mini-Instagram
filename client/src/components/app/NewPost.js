@@ -123,7 +123,6 @@ class NewPost extends Component {
   };
 
   addEmoji = e => {
-    console.log(e);
     this.setState({
       caption: this.state.caption + e
     });

@@ -44,9 +44,7 @@ class FeedOutputList extends Component {
       {
         windowWidth: window.innerWidth
       },
-      () => {
-        console.log(this.getColumnWidth());
-      }
+      () => {}
     );
     if (this.state.isAuthenticated) {
       this.props.fetchFeed();
