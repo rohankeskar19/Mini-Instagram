@@ -183,7 +183,6 @@ class Register extends Component {
   };
 
   dataURItoBlob = dataURI => {
-    // convert base64/URLEncoded data component to raw binary data held in a string
     var byteString;
     if (dataURI.split(",")[0].indexOf("base64") >= 0)
       byteString = atob(dataURI.split(",")[1]);
@@ -209,7 +208,8 @@ class Register extends Component {
       message.error("You must crop the file before upload");
       return;
     }
-    var image = this.state.imagePreviewCanvas.current.toDataURL("image/png");
+
+    var image = this.state.imagePreviewCanvas.current.toDataURL("image/jpeg");
 
     const formImage = this.dataURItoBlob(image);
 
@@ -279,11 +279,13 @@ class Register extends Component {
   };
 
   onChange = e => {
-    this.setState({
-      imageSource: URL.createObjectURL(e.target.files[0]),
-      imageFile: e.target.files[0],
-      imageSelected: true
-    });
+    if (e.target.files[0]) {
+      this.setState({
+        imageSource: URL.createObjectURL(e.target.files[0]),
+        imageFile: e.target.files[0],
+        imageSelected: true
+      });
+    }
   };
 
   handleSubmit = e => {
