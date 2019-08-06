@@ -335,7 +335,7 @@ class Navbar extends Component {
       </Form.Item>
     );
 
-    return isAuthenticated ? authenticatedUi : guestUi;
+    return isAuthenticated && user ? authenticatedUi : guestUi;
   }
 }
 
