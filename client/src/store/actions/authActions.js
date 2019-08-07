@@ -3,6 +3,7 @@ import setAuthToken from "../../utils/setAuthToken";
 import jwtDecode from "jwt-decode";
 import { setCurrentUser } from "./usersActions";
 
+// Login user with email
 export const loginUserWithEmail = (userData, history) => {
   return (dispatch, getState) => {
     Axios.post("/api/user/login", {
@@ -26,7 +27,7 @@ export const loginUserWithEmail = (userData, history) => {
             token
           }
         });
-        setCurrentUser(history);
+        dispatch(setCurrentUser(history));
       })
       .catch(err => {
         dispatch({ type: "GET_ERRORS", payload: err.response.data });
@@ -34,6 +35,7 @@ export const loginUserWithEmail = (userData, history) => {
   };
 };
 
+// Login user with username
 export const loginUserWithUsername = (userData, history) => {
   return (dispatch, getState) => {
     Axios.post("/api/user/login", {

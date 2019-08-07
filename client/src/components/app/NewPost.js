@@ -4,7 +4,6 @@ import { Button, Icon, message } from "antd";
 import Axios from "axios";
 import { createPost, resetCreatedPost } from "../../store/actions/postsActions";
 import { connect } from "react-redux";
-import FeedOutputList from "./FeedOutputList";
 
 class NewPost extends Component {
   state = {
@@ -85,33 +84,50 @@ class NewPost extends Component {
     });
   };
 
+  isImage = file => {
+    if (
+      file.type === "image/png" ||
+      file.type === "image/jpg" ||
+      file.type === "image/jpeg"
+    ) {
+      return true;
+    } else {
+      message.error("File must be of type PNG,JPG or JPEG");
+      return false;
+    }
+  };
+
   selectFile = e => {
     e.stopPropagation();
     e.preventDefault();
-    const image = e.target.files[0];
-    if (image) {
-      this.setState(
-        {
-          image: image,
-          imageSelected: true,
-          imageSrc: URL.createObjectURL(image)
-        },
-        () => {
-          const image = new Image();
-          const scope = this;
-          image.onload = function() {
-            if (this.width > this.height) {
-              scope.setImageType("landscape");
-            } else if (this.width < this.height) {
-              scope.setImageType("portrait");
-            } else {
-              scope.setImageType("square");
-            }
-          };
-          image.src = this.state.imageSrc;
-          this.uploadImage();
-        }
-      );
+
+    if (this.isImage(e.target.files[0])) {
+      const image = e.target.files[0];
+      if (image) {
+        this.setState(
+          {
+            image: image,
+            imageSelected: true,
+            imageSrc: URL.createObjectURL(image)
+          },
+          () => {
+            const image = new Image();
+            const scope = this;
+            image.onload = function() {
+              if (this.width > this.height) {
+                scope.setImageType("landscape");
+              } else if (this.width < this.height) {
+                scope.setImageType("portrait");
+              } else {
+                scope.setImageType("square");
+              }
+            };
+            image.src = this.state.imageSrc;
+            this.uploadImage();
+          }
+        );
+      }
+    } else {
     }
   };
 
@@ -166,7 +182,8 @@ class NewPost extends Component {
       imageSrc,
       imageType,
       uploadingImage,
-      createdPost
+      createdPost,
+      caption
     } = this.state;
     return (
       <div className="newpost">
@@ -210,6 +227,7 @@ class NewPost extends Component {
             placeholder="Enter caption"
             addEmoji={this.addEmoji}
             className="textArea"
+            value={caption}
           />
           <Button onClick={this.createPost} className="addPostButton">
             Add post

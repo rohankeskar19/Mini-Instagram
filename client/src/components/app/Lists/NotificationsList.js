@@ -1,5 +1,5 @@
 import React from "react";
-import NotificationItem from "./NotificationItem";
+import NotificationItem from "../ListItems/NotificationItem";
 const NotificationsList = ({ notifications }) => {
   return (
     <div>

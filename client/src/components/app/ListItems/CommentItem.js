@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import moment from "moment";
 
 const CommentItem = ({ comment }) => {
   return (
@@ -16,6 +17,7 @@ const CommentItem = ({ comment }) => {
 
         <p className="commentContent">{comment.content}</p>
       </div>
+      <p>{moment(comment.createdAt).fromNow()}</p>
     </div>
   );
 };

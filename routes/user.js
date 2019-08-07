@@ -169,7 +169,7 @@ Router.post("/register", (req, res) => {
 // @route - /api/user/login
 // @method - POST
 // @access - Public
-// @params - email or username,password
+// @params - email or username & password
 Router.post("/login", (req, res) => {
   const { email, username, password } = req.body;
   console.log(req.body);
@@ -178,65 +178,65 @@ Router.post("/login", (req, res) => {
     if (Object.keys(errors).length > 0) {
       return res.status(422).json(errors);
     } else {
-      User.find({ email: email }, (err, data) => {
+      User.findOne({ email: email }, (err, data) => {
         if (!err) {
           if (data) {
-            if (data.length) {
-              bcrypt.compare(password, data[0].password, (err, match) => {
-                if (!err) {
-                  if (match) {
-                    const newUser = {
-                      id: data[0]._id,
-                      email: data[0].email,
-                      username: data[0].username,
-                      profileUrl: data[0].profileUrl,
-                      bio: data[0].bio,
-                      createdAt: data[0].createdAt
-                    };
-                    jsonwebtoken.sign(
-                      newUser,
-                      config.secret,
-                      {
-                        expiresIn: config.tokenDuration
-                      },
-                      (err, token) => {
-                        if (!err) {
-                          if (token) {
-                            const newToken = "Bearer " + token;
-                            return res.json({ auth: true, token: newToken });
-                          } else {
-                            return res.status(500).json({
-                              error: "Failed to process request (try again)"
-                            });
-                          }
+            bcrypt.compare(password, data.password, (err, match) => {
+              if (!err) {
+                if (match) {
+                  const newUser = {
+                    id: data._id,
+                    email: data.email,
+                    username: data.username,
+                    profileUrl: data.profileUrl,
+                    bio: data.bio,
+                    createdAt: data.createdAt
+                  };
+                  jsonwebtoken.sign(
+                    newUser,
+                    config.secret,
+                    {
+                      expiresIn: config.tokenDuration
+                    },
+                    (err, token) => {
+                      if (!err) {
+                        if (token) {
+                          const newToken = "Bearer " + token;
+
+                          console.log(newToken);
+                          return res.json({ auth: true, token: newToken });
                         } else {
+                          console.log(err);
                           return res.status(500).json({
                             error: "Failed to process request (try again)"
                           });
                         }
+                      } else {
+                        console.log(err);
+                        return res.status(500).json({
+                          error: "Failed to process request (try again)"
+                        });
                       }
-                    );
-                  } else {
-                    return res
-                      .status(422)
-                      .json({ loginId: "Invalid credentials" });
-                  }
+                    }
+                  );
                 } else {
-                  console.log(err);
                   return res
-                    .status(500)
-                    .json({ error: "Failed to process request (try again)" });
+                    .status(422)
+                    .json({ loginId: "Invalid credentials" });
                 }
-              });
-            } else {
-              return res.status(404).json({ loginId: "User does not exists" });
-            }
+              } else {
+                console.log(err);
+                return res
+                  .status(500)
+                  .json({ error: "Failed to process request (try again)" });
+              }
+            });
           } else {
-            return res
-              .status(500)
-              .json({ error: "Failed to process request (try again)" });
+            console.log(err);
+            return res.status(404).json({ loginId: "User does not exists" });
           }
         } else {
+          console.log(err);
           return res
             .status(500)
             .json({ error: "Failed to process request (try again)" });
@@ -248,64 +248,63 @@ Router.post("/login", (req, res) => {
     if (Object.keys(errors).length > 0) {
       return res.status(422).json(errors);
     } else {
-      User.find({ username: username }, (err, data) => {
+      User.findOne({ username: username }, (err, data) => {
         if (!err) {
           if (data) {
-            if (data.length) {
-              bcrypt.compare(password, data[0].password, (err, match) => {
-                if (!err) {
-                  if (match) {
-                    const newUser = {
-                      id: data[0]._id,
-                      email: data[0].email,
-                      username: data[0].username,
-                      profileUrl: data[0].profileUrl,
-                      bio: data[0].bio,
-                      createdAt: data[0].createdAt
-                    };
-                    jsonwebtoken.sign(
-                      newUser,
-                      config.secret,
-                      {
-                        expiresIn: config.tokenDuration
-                      },
-                      (err, token) => {
-                        if (!err) {
-                          if (token) {
-                            const newToken = "Bearer " + token;
-                            return res.json({ auth: true, token: newToken });
-                          } else {
-                            return res.status(500).json({
-                              error: "Failed to process request (try again)"
-                            });
-                          }
+            bcrypt.compare(password, data.password, (err, match) => {
+              if (!err) {
+                if (match) {
+                  const newUser = {
+                    id: data._id,
+                    email: data.email,
+                    username: data.username,
+                    profileUrl: data.profileUrl,
+                    bio: data.bio,
+                    createdAt: data.createdAt
+                  };
+                  jsonwebtoken.sign(
+                    newUser,
+                    config.secret,
+                    {
+                      expiresIn: config.tokenDuration
+                    },
+                    (err, token) => {
+                      if (!err) {
+                        if (token) {
+                          const newToken = "Bearer " + token;
+                          return res.json({ auth: true, token: newToken });
                         } else {
+                          console.log(err + "1");
                           return res.status(500).json({
                             error: "Failed to process request (try again)"
                           });
                         }
+                      } else {
+                        console.log(err + "2");
+                        return res.status(500).json({
+                          error: "Failed to process request (try again)"
+                        });
                       }
-                    );
-                  } else {
-                    return res
-                      .status(422)
-                      .json({ loginId: "Invalid credentials" });
-                  }
+                    }
+                  );
                 } else {
+                  console.log(err);
                   return res
-                    .status(500)
-                    .json({ error: "Failed to process request (try again)" });
+                    .status(422)
+                    .json({ loginId: "Invalid credentials" });
                 }
-              });
-            } else {
-              return res.status(404).json({ loginId: "User does not exists" });
-            }
+              } else {
+                console.log(err + "3");
+                return res
+                  .status(500)
+                  .json({ error: "Failed to process request (try again)" });
+              }
+            });
           } else {
-            return res
-              .status(500)
-              .json({ error: "Failed to process request (try again)" });
+            return res.status(404).json({ loginId: "User does not exists" });
           }
         } else {
+          console.log(err + "5");
           return res
             .status(500)
             .json({ error: "Failed to process request (try again)" });

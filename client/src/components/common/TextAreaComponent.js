@@ -131,7 +131,7 @@ class TextAreaComponent extends Component {
           }
           placeholder={this.props.placeholder}
           name={this.props.name}
-          value={this.state.stringUptoLimit}
+          value={this.props.value}
           onFocus={this.hidePicker}
           id="textarea"
           readOnly={this.state.disabled}

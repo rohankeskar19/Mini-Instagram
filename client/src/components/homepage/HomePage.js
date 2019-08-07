@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 
-import Register from "./auth/Register";
+import Register from "./Register";
 import store from "../../store/store";
 import jwtDecode from "jwt-decode";
 import setAuthToken from "../../utils/setAuthToken";

@@ -4,7 +4,8 @@ const initialState = {
   createdPost: false,
   feedUpdated: false,
   postDetails: {},
-  commentsLoading: false
+  commentsLoading: false,
+  addingComment: false
 };
 
 const postsReducer = (state = initialState, action) => {
@@ -53,6 +54,11 @@ const postsReducer = (state = initialState, action) => {
         ...state,
         createdPost: false
       };
+    case "ADDING_COMMENT":
+      return {
+        ...state,
+        addingComment: true
+      };
     case "LIKED_POST":
       postDetails.liked = true;
       postDetails.likes += 1;
@@ -89,7 +95,8 @@ const postsReducer = (state = initialState, action) => {
           ...state,
           postDetails: {
             ...postDetails
-          }
+          },
+          addingComment: false
         };
       } else {
         return state;

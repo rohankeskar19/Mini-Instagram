@@ -6,7 +6,7 @@ import store from "../../store/store";
 import jwtDecode from "jwt-decode";
 import setAuthToken from "../../utils/setAuthToken";
 import { logoutUser } from "../../store/actions/authActions";
-import FeedOutputList from "./FeedOutputList";
+import FeedOutputList from "./Lists/FeedOutputList";
 
 class Dashboard extends Component {
   state = {

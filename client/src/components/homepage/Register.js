@@ -1,12 +1,11 @@
 import React, { Component } from "react";
 import { Steps, Button, message, Form, Icon, Input } from "antd";
-import TextAreaComponent from "../../common/TextAreaComponent";
+import TextAreaComponent from "../common/TextAreaComponent";
 import Axios from "axios";
 import { withRouter } from "react-router-dom";
-import ReactCrop from "react-image-crop";
-import "react-image-crop/dist/ReactCrop.css";
+
 import { connect } from "react-redux";
-import { registerUser } from "../../../store/actions/authActions";
+import { registerUser } from "../../store/actions/authActions";
 
 const { Step } = Steps;
 
@@ -21,13 +20,11 @@ class Register extends Component {
     bio: "",
     imageSelected: false,
     imageSource: null,
-    imageFile: null,
+    image: null,
     profileUrl: "",
     uploading: false,
     creatingAccount: false,
-    crop: null,
-    setCrop: null,
-    fileCropped: false,
+
     imagePreviewCanvas: React.createRef(),
     errors: {
       email: this.props.errors.email,
@@ -92,10 +89,8 @@ class Register extends Component {
     if (email.trim() === "") {
       this.setState({
         errors: {
-          email: "Please enter an email",
-          username: this.state.errors.username,
-          password: this.state.errors.password,
-          password2: this.state.errors.password2
+          ...this.state.errors,
+          email: "Please enter an email"
         }
       });
       return false;
@@ -103,10 +98,8 @@ class Register extends Component {
     if (!emailRegex.test(email)) {
       this.setState({
         errors: {
-          email: "Please enter an valid email",
-          username: this.state.errors.username,
-          password: this.state.errors.password,
-          password2: this.state.errors.password2
+          ...this.state.errors,
+          email: "Please enter an valid email"
         }
       });
       return false;
@@ -114,10 +107,8 @@ class Register extends Component {
     if (username.trim() === "") {
       this.setState({
         errors: {
-          email: this.state.errors.email,
-          username: "Please enter an username",
-          password: this.state.errors.password,
-          password2: this.state.errors.password2
+          ...this.state.errors,
+          username: "Please enter an username"
         }
       });
       return false;
@@ -125,10 +116,8 @@ class Register extends Component {
     if (username.length < 6 || username.length > 32) {
       this.setState({
         errors: {
-          email: this.state.errors.email,
-          username: "Username must be 6-32 characters long",
-          password: this.state.errors.password,
-          password2: this.state.errors.password2
+          ...this.state.errors,
+          username: "Username must be 6-32 characters long"
         }
       });
       return false;
@@ -136,10 +125,8 @@ class Register extends Component {
     if (password === "") {
       this.setState({
         errors: {
-          email: this.state.errors.email,
-          username: this.state.errors.username,
-          password: "Please enter a password",
-          password2: this.state.errors.password2
+          ...this.state.errors,
+          password: "Please enter a password"
         }
       });
       return false;
@@ -147,9 +134,7 @@ class Register extends Component {
     if (password2 === "") {
       this.setState({
         errors: {
-          email: this.state.errors.email,
-          username: this.state.errors.username,
-          password: this.state.errors.password,
+          ...this.state.errors,
           password2: "Please enter a password"
         }
       });
@@ -158,8 +143,7 @@ class Register extends Component {
     if (password.length < 6 || password.length > 30) {
       this.setState({
         errors: {
-          email: this.state.errors.email,
-          username: this.state.errors.username,
+          ...this.state.errors,
           password: "Password must be between 6 to 30 characters",
           password2: "Password must be between 6 to 30 characters"
         }
@@ -169,8 +153,7 @@ class Register extends Component {
     if (password !== password2) {
       this.setState({
         errors: {
-          email: this.state.errors.email,
-          username: this.state.errors.username,
+          ...this.state.errors,
           password: "Passwords do not match",
           password2: "Passwords do not match"
         }
@@ -181,39 +164,11 @@ class Register extends Component {
     return true;
   };
 
-  dataURItoBlob = dataURI => {
-    var byteString;
-    if (dataURI.split(",")[0].indexOf("base64") >= 0)
-      byteString = atob(dataURI.split(",")[1]);
-    else byteString = unescape(dataURI.split(",")[1]);
-
-    // separate out the mime component
-    var mimeString = dataURI
-      .split(",")[0]
-      .split(":")[1]
-      .split(";")[0];
-
-    // write the bytes of the string to a typed array
-    var ia = new Uint8Array(byteString.length);
-    for (var i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
-    }
-
-    return new Blob([ia], { type: mimeString });
-  };
-
   uploadImage = () => {
-    if (!this.state.fileCropped) {
-      message.error("You must crop the file before upload");
-      return;
-    }
-
-    var image = this.state.imagePreviewCanvas.current.toDataURL("image/jpeg");
-
-    const formImage = this.dataURItoBlob(image);
+    const { image } = this.state;
 
     const formData = new FormData();
-    formData.append("profile", formImage);
+    formData.append("profile", image);
     try {
       this.setState(
         {
@@ -275,13 +230,39 @@ class Register extends Component {
     }
   };
 
-  onChange = e => {
+  isImage = file => {
+    if (
+      file.type === "image/png" ||
+      file.type === "image/jpg" ||
+      file.type === "image/jpeg"
+    ) {
+      return true;
+    } else {
+      message.error("File must be of type PNG,JPG or JPEG");
+      return false;
+    }
+  };
+
+  handleImageSelect = e => {
     if (e.target.files[0]) {
-      this.setState({
-        imageSource: URL.createObjectURL(e.target.files[0]),
-        imageFile: e.target.files[0],
-        imageSelected: true
-      });
+      if (this.isImage(e.target.files[0])) {
+        const imageSource = URL.createObjectURL(e.target.files[0]);
+        if (imageSource) {
+          this.setState(
+            {
+              imageSource,
+              imageSelected: true,
+              image: e.target.files[0]
+            },
+            () => {
+              this.uploadImage();
+            }
+          );
+        } else {
+          message.error("Please select an profile image to continue");
+        }
+      } else {
+      }
     }
   };
 
@@ -295,52 +276,8 @@ class Register extends Component {
     });
   };
 
-  handleImageCrop = crop => {
-    crop.aspect = 1 / 1;
-    this.setState(
-      {
-        crop
-      },
-      () => {
-        const canvasRef = this.state.imagePreviewCanvas.current;
-
-        const imgSrc = this.state.imageSource;
-
-        canvasRef.width = crop.width;
-        canvasRef.height = crop.height;
-
-        const ctx = canvasRef.getContext("2d");
-
-        const image = new Image();
-
-        image.src = imgSrc;
-        image.onload = () => {
-          ctx.drawImage(
-            image,
-            crop.x,
-            crop.y,
-            crop.width,
-            crop.height,
-            0,
-            0,
-            crop.width,
-            crop.height
-          );
-        };
-      }
-    );
-  };
-
-  handleOnCropComplete = (crop, pixelCrop) => {
-    this.setState({
-      crop: crop
-    });
-  };
-
   openFileSelector = e => {
-    this.setState({
-      fileCropped: true
-    });
+    this.refs.profileImageSelecter.click();
   };
 
   firstStepContent = () => (
@@ -417,31 +354,14 @@ class Register extends Component {
   secondStepContent = () => (
     <div className="imageUpload">
       <div className="imageBox">
-        <input
-          className="fileSelect"
-          type="file"
-          accept="image/*"
-          onChange={this.onChange}
-        />
-
         {this.state.imageSource ? (
           <div className="imageBox1">
             <h4 className="imageMessage">Drag to crop the image</h4>
-            <div
-              className="imagePreviewContainer"
-              onClick={this.openFileSelector}
-            >
-              <ReactCrop
+            <div className="imagePreviewContainer">
+              <img
                 src={this.state.imageSource}
-                className="profileImage"
-                alt="Profile"
-                crop={this.state.crop}
-                onChange={this.handleImageCrop}
-                onComplete={this.handleOnCropComplete}
-              />
-              <canvas
-                ref={this.state.imagePreviewCanvas}
-                style={{ display: "none" }}
+                alt="profile"
+                className="profileImagePreview"
               />
             </div>
 
@@ -456,12 +376,20 @@ class Register extends Component {
         ) : (
           <div>
             <input
-              className="fileSelect"
               type="file"
               accept="image/*"
-              onChange={this.onChange}
-              style={{ opacity: "0" }}
+              ref="profileImageSelecter"
+              onChange={this.handleImageSelect}
+              style={{ display: "none" }}
             />
+
+            <Button
+              type="primary"
+              onClick={this.openFileSelector}
+              className="profileImageSelector"
+            >
+              <Icon type="file-image" />
+            </Button>
             <div className="imageMessage">
               <h4>Select an profile image</h4>
             </div>

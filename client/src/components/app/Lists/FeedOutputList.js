@@ -5,7 +5,7 @@ import {
   likePost,
   unlikePost,
   resetFeedUpdated
-} from "../../store/actions/postsActions";
+} from "../../../store/actions/postsActions";
 import { Icon } from "antd";
 import LinesEllipsis from "react-lines-ellipsis";
 import StackGrid from "react-stack-grid";

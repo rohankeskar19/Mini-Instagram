@@ -36,7 +36,7 @@ export const fetchFeed = () => {
           }
         }
 
-        for (var i = 0; i < feed.length; i++) {
+        for (i = 0; i < feed.length; i++) {
           if (likedPosts.indexOf(feed[i]._id) > -1) {
             feed[i]["liked"] = true;
           } else {
@@ -108,6 +108,7 @@ export const getPostData = postId => {
 
 export const addComment = (postId, comment) => {
   return (dispatch, getState) => {
+    dispatch({ type: "ADDING_COMMENT" });
     Axios.post("/api/post/comment", {
       postId: postId,
       comment_content: comment

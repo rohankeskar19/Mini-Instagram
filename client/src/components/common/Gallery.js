@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import GalleryItem from "./GalleryItem";
+import GalleryItem from "../app/ListItems/GalleryItem";
 
 export class Gallery extends Component {
   state = {

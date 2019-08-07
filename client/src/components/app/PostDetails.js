@@ -10,7 +10,7 @@ import {
 import { Icon, Tooltip, Button, message } from "antd";
 import { Link } from "react-router-dom";
 import TextAreaComponent from "../common/TextAreaComponent";
-import CommentList from "../common/CommentList";
+import CommentList from "./Lists/CommentList";
 
 export class PostDetails extends Component {
   state = {
@@ -98,13 +98,11 @@ export class PostDetails extends Component {
               <div className="postComments">
                 {commentsLoading ? (
                   <Icon type="loading" className="center commentsSpinner" />
-                ) : comments && comments.length > 0 ? (
+                ) : (
                   <CommentList
                     comments={comments}
                     captionAsComment={captionAsComment}
                   />
-                ) : (
-                  ""
                 )}
 
                 <div className="commentsInput">
@@ -122,7 +120,11 @@ export class PostDetails extends Component {
                     className="addCommentButton"
                     onClick={this.addComment}
                   >
-                    <Icon type="plus" />
+                    {this.props.addingComment ? (
+                      <Icon type="loading" style={{ color: "#fff" }} />
+                    ) : (
+                      <Icon type="plus" />
+                    )}
                   </Button>
                 </div>
               </div>
@@ -153,6 +155,7 @@ export class PostDetails extends Component {
                     type="reload"
                     className="reloadComments"
                     onClick={() => this.props.refreshComments(postData.id)}
+                    spin={this.props.commentsLoading}
                   />
                 </Tooltip>
               </div>
@@ -168,7 +171,8 @@ export class PostDetails extends Component {
 const mapStateToProps = state => {
   return {
     postDetails: state.posts.postDetails,
-    commentsLoading: state.posts.commentsLoading
+    commentsLoading: state.posts.commentsLoading,
+    addingComment: state.posts.addingComment
   };
 };
 
