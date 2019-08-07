@@ -23,8 +23,7 @@ export const loginUserWithEmail = (userData, history) => {
           type: "LOGIN_USER",
           payload: {
             user: decoded,
-            isAuthenticated: true,
-            token
+            isAuthenticated: true
           }
         });
         dispatch(setCurrentUser(history));
@@ -55,8 +54,7 @@ export const loginUserWithUsername = (userData, history) => {
           type: "LOGIN_USER",
           payload: {
             user: decoded,
-            isAuthenticated: true,
-            token
+            isAuthenticated: true
           }
         });
         dispatch(setCurrentUser(history));
