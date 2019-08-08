@@ -1,5 +1,5 @@
 # Mini-Instagram
-A social media app similar to instagram
+A social media app similar to instagram, 
 live demo : https://powerful-coast-18022.herokuapp.com/
 # You should have node.js installed to run this project
 # Steps
