@@ -33,6 +33,7 @@ class NewPost extends Component {
 
     if (prevProps.createdPost !== this.props.createdPost) {
       if (this.props.createdPost) {
+        message.success("Post created");
         this.setState(
           {
             imageSelected: false,
@@ -45,6 +46,7 @@ class NewPost extends Component {
           },
           () => {
             this.props.resetCreatedPost();
+            this.props.history.push("/");
           }
         );
       }
@@ -182,12 +184,11 @@ class NewPost extends Component {
       imageSrc,
       imageType,
       uploadingImage,
-      createdPost,
+
       caption
     } = this.state;
     return (
       <div className="newpost">
-        {createdPost && message.success("Post created!")}
         <input
           type="file"
           accept="image/*"

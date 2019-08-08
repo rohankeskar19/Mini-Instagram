@@ -90,51 +90,60 @@ class FeedOutputList extends Component {
       <Icon type="loading" className="center" />
     ) : (
       <div className="feedOutput">
-        <StackGrid columnWidth={this.getColumnWidth()} style={{ zIndex: "0" }}>
-          {feed &&
-            feed.map(post => (
-              <div className="feedItem" key={post._id}>
-                <Link to={`/user/${post.username}`}>
-                  <p className="feedItemUsername">{post.username}</p>
-                </Link>
-                <Link to={`/post/${post._id}`}>
-                  <img
-                    src={post.imageUrl}
-                    alt={post.caption}
-                    className="feedItemImage"
-                  />
-                </Link>
-
-                <div className="content">
-                  <LinesEllipsis
-                    text={post.caption}
-                    className="feedItemCaption"
-                    maxLine="3"
-                    ellipsis="..."
-                    trimRight
-                    basedOn="letters"
-                  />
-
-                  {post.liked ? (
-                    <Icon
-                      type="heart"
-                      className="likeButton"
-                      theme="filled"
-                      style={{ color: "#d41c00" }}
-                      onClick={() => this.props.unlikePost(post._id)}
+        {feed.length > 0 ? (
+          <StackGrid
+            columnWidth={this.getColumnWidth()}
+            style={{ zIndex: "0" }}
+          >
+            {feed &&
+              feed.map(post => (
+                <div className="feedItem" key={post._id}>
+                  <Link to={`/user/${post.username}`}>
+                    <p className="feedItemUsername">{post.username}</p>
+                  </Link>
+                  <Link to={`/post/${post._id}`}>
+                    <img
+                      src={post.imageUrl}
+                      alt={post.caption}
+                      className="feedItemImage"
                     />
-                  ) : (
-                    <Icon
-                      type="heart"
-                      className="likeButton"
-                      onClick={() => this.props.likePost(post._id)}
-                      style={{ color: "#333" }}
+                  </Link>
+
+                  <div className="content">
+                    <LinesEllipsis
+                      text={post.caption}
+                      className="feedItemCaption"
+                      maxLine="3"
+                      ellipsis="..."
+                      trimRight
+                      basedOn="letters"
                     />
-                  )}
+
+                    {post.liked ? (
+                      <Icon
+                        type="heart"
+                        className="likeButton"
+                        theme="filled"
+                        style={{ color: "#d41c00" }}
+                        onClick={() => this.props.unlikePost(post._id)}
+                      />
+                    ) : (
+                      <Icon
+                        type="heart"
+                        className="likeButton"
+                        onClick={() => this.props.likePost(post._id)}
+                        style={{ color: "#333" }}
+                      />
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-        </StackGrid>
+              ))}
+          </StackGrid>
+        ) : (
+          <h3 style={{ textAlign: "center", color: "#000" }}>
+            You should follow someone or create a post to fill up your feed!
+          </h3>
+        )}
       </div>
     );
   }
