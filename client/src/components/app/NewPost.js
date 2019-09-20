@@ -2,11 +2,10 @@ import React, { Component } from "react";
 import TextAreaComponent from "../common/TextAreaComponent";
 import { Button, Icon, message } from "antd";
 import Axios from "axios";
-import { createPost } from "../../store/actions/postsActions";
+import { createPost, resetCreatedPost } from "../../store/actions/postsActions";
 import { connect } from "react-redux";
-import FeedOutputList from "./FeedOutputList";
 
-class Feed extends Component {
+class NewPost extends Component {
   state = {
     imageSelected: false,
     image: null,
@@ -34,15 +33,22 @@ class Feed extends Component {
 
     if (prevProps.createdPost !== this.props.createdPost) {
       if (this.props.createdPost) {
-        this.setState({
-          imageSelected: false,
-          image: null,
-          imageSrc: null,
-          imageType: "",
-          uploadingImage: false,
-          imageUrl: "",
-          caption: ""
-        });
+        message.success("Post created");
+        this.setState(
+          {
+            imageSelected: false,
+            image: null,
+            imageSrc: null,
+            imageType: "",
+            uploadingImage: false,
+            imageUrl: "",
+            caption: ""
+          },
+          () => {
+            this.props.resetCreatedPost();
+            this.props.history.push("/");
+          }
+        );
       }
       this.setState({
         createdPost: this.props.createdPost
@@ -80,33 +86,50 @@ class Feed extends Component {
     });
   };
 
+  isImage = file => {
+    if (
+      file.type === "image/png" ||
+      file.type === "image/jpg" ||
+      file.type === "image/jpeg"
+    ) {
+      return true;
+    } else {
+      message.error("File must be of type PNG,JPG or JPEG");
+      return false;
+    }
+  };
+
   selectFile = e => {
     e.stopPropagation();
     e.preventDefault();
-    const image = e.target.files[0];
-    if (image) {
-      this.setState(
-        {
-          image: image,
-          imageSelected: true,
-          imageSrc: URL.createObjectURL(image)
-        },
-        () => {
-          const image = new Image();
-          const scope = this;
-          image.onload = function() {
-            if (this.width > this.height) {
-              scope.setImageType("landscape");
-            } else if (this.width < this.height) {
-              scope.setImageType("portrait");
-            } else {
-              scope.setImageType("square");
-            }
-          };
-          image.src = this.state.imageSrc;
-          this.uploadImage();
-        }
-      );
+
+    if (this.isImage(e.target.files[0])) {
+      const image = e.target.files[0];
+      if (image) {
+        this.setState(
+          {
+            image: image,
+            imageSelected: true,
+            imageSrc: URL.createObjectURL(image)
+          },
+          () => {
+            const image = new Image();
+            const scope = this;
+            image.onload = function() {
+              if (this.width > this.height) {
+                scope.setImageType("landscape");
+              } else if (this.width < this.height) {
+                scope.setImageType("portrait");
+              } else {
+                scope.setImageType("square");
+              }
+            };
+            image.src = this.state.imageSrc;
+            this.uploadImage();
+          }
+        );
+      }
+    } else {
     }
   };
 
@@ -118,7 +141,6 @@ class Feed extends Component {
   };
 
   addEmoji = e => {
-    console.log(e);
     this.setState({
       caption: this.state.caption + e
     });
@@ -138,6 +160,9 @@ class Feed extends Component {
         caption: this.state.caption
       };
       this.props.creatPost(postData);
+      this.setState({
+        caption: ""
+      });
     } else {
       if (!imageSelected) {
         message.error("You must select an image to upload");
@@ -159,19 +184,19 @@ class Feed extends Component {
       imageSrc,
       imageType,
       uploadingImage,
-      createdPost
+
+      caption
     } = this.state;
     return (
-      <div className="feed">
-        <div className="newPostContainer">
-          {createdPost && message.success("Post created!")}
-          <input
-            type="file"
-            accept="image/*"
-            style={{ display: "none" }}
-            ref="imageSelector"
-            onChange={this.selectFile}
-          />
+      <div className="newpost">
+        <input
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          ref="imageSelector"
+          onChange={this.selectFile}
+        />
+        <div className="addPostImageContainer">
           <Button
             type="primary"
             className="addPostImageButton"
@@ -179,36 +204,37 @@ class Feed extends Component {
           >
             <Icon type="file-image" />
           </Button>
-          {imageSelected && (
-            <div className="imageUploadContainer">
-              {uploadingImage && (
-                <Icon type="loading" className="imageUploadSpinner" />
-              )}
-
-              <img
-                className={`previewImage ${imageType}`}
-                src={imageSrc}
-                style={{ opacity: uploadingImage ? "0.5" : "1" }}
-                alt="preview"
-              />
-            </div>
-          )}
-          <div className="captionContainer">
-            <TextAreaComponent
-              onTextChange={this.handleChange}
-              maxChar={300}
-              name="caption"
-              placeholder="Enter caption"
-              addEmoji={this.addEmoji}
-              className="textArea"
-            />
-            <Button onClick={this.createPost} className="addPostButton">
-              Add post
-              <Icon type="plus" />
-            </Button>
-          </div>
         </div>
-        <FeedOutputList />
+
+        {imageSelected && (
+          <div className="imageUploadContainer">
+            {uploadingImage && (
+              <Icon type="loading" className="imageUploadSpinner" />
+            )}
+
+            <img
+              className={`previewImage ${imageType}`}
+              src={imageSrc}
+              style={{ opacity: uploadingImage ? "0.5" : "1" }}
+              alt="preview"
+            />
+          </div>
+        )}
+        <div className="captionContainer">
+          <TextAreaComponent
+            onTextChange={this.handleChange}
+            maxChar={400}
+            name="caption"
+            placeholder="Enter caption"
+            addEmoji={this.addEmoji}
+            className="textArea"
+            value={caption}
+          />
+          <Button onClick={this.createPost} className="addPostButton">
+            Add post
+            <Icon type="plus" />
+          </Button>
+        </div>
       </div>
     );
   }
@@ -223,11 +249,12 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    creatPost: postData => dispatch(createPost(postData))
+    creatPost: postData => dispatch(createPost(postData)),
+    resetCreatedPost: () => dispatch(resetCreatedPost())
   };
 };
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(Feed);
+)(NewPost);

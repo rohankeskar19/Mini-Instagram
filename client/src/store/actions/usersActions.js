@@ -4,13 +4,11 @@ import jwtDecode from "jwt-decode";
 
 export const getUserDetails = username => {
   return (dispatch, getState) => {
-    Axios.get(`/api/user/details/?username=${username}`)
+    Axios.get(`/api/user/details/${username}`)
       .then(res => {
         dispatch({ type: "GET_USER_DETAILS", payload: res.data.user });
       })
-      .catch(err => {
-        console.log(err);
-      });
+      .catch(err => {});
   };
 };
 
@@ -20,7 +18,7 @@ export const setCurrentUser = history => {
     setAuthToken(token);
     const decoded = jwtDecode(token);
 
-    Axios.get(`/api/user/details/?username=${decoded.username}`)
+    Axios.get(`/api/user/details/${decoded.username}`)
       .then(res => {
         dispatch({ type: "SET_CURRENT_USER", payload: res.data.user });
         dispatch({
@@ -34,9 +32,7 @@ export const setCurrentUser = history => {
 
         history.push("/");
       })
-      .catch(err => {
-        console.log(err);
-      });
+      .catch(err => {});
   };
 };
 
@@ -64,9 +60,7 @@ export const fetchNotifications = () => {
           }
         });
       })
-      .catch(err => {
-        console.log(err);
-      });
+      .catch(err => {});
   };
 };
 
@@ -77,9 +71,7 @@ export const followUser = userId => {
       .then(res => {
         dispatch({ type: "FOLLOWED_USER", payload: res.data.user_id });
       })
-      .catch(err => {
-        console.log(err);
-      });
+      .catch(err => {});
   };
 };
 
@@ -90,8 +82,6 @@ export const unfollowUser = userId => {
       .then(res => {
         dispatch({ type: "UNFOLLOWED_USER", payload: res.data.user_id });
       })
-      .catch(err => {
-        console.log(err);
-      });
+      .catch(err => {});
   };
 };

@@ -2,13 +2,16 @@ import React, { Component } from "react";
 import { withRouter, Route, Switch } from "react-router-dom";
 import setAuthToken from "./utils/setAuthToken";
 import jwtDecode from "jwt-decode";
-
 import store from "./store/store";
 
-import Dashboard from "./components/app/Dashboard";
 import HomePage from "./components/homepage/HomePage";
+
+import Dashboard from "./components/app/Dashboard";
+import NewPost from "./components/app/NewPost";
+import PostDetails from "./components/app/PostDetails";
+
 import Navbar from "./components/common/Navbar";
-import UserDetails from "./components/common/UserDetails";
+import UserDetails from "./components/app/UserDetails";
 
 import { Provider } from "react-redux";
 import { logoutUser } from "./store/actions/authActions";
@@ -45,7 +48,9 @@ class App extends Component {
           <Switch>
             <Route path="/home-page" component={HomePage} exact />
             <Route path="/" component={Dashboard} exact />
+            <Route path="/post/new" component={NewPost} exact />
             <Route path="/user/:username" component={UserDetails} exact />
+            <Route path="/post/:post_id" component={PostDetails} exact />
           </Switch>
         </div>
       </Provider>

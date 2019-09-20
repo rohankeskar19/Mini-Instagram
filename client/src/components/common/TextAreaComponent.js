@@ -30,7 +30,6 @@ class TextAreaComponent extends Component {
       stringUptoLimit: e.target.value
     });
     if (length + 1 > this.state.maxChar) {
-      console.log("olaaaaaa");
       e.target.value = this.state.stringUptoLimit;
       this.setState({
         disabled: true
@@ -92,9 +91,7 @@ class TextAreaComponent extends Component {
 
   handleBackSpace = e => {
     const keyCode = e.keyCode;
-    console.log("called back");
     if (this.state.disabled && keyCode === 8) {
-      console.log("called back space");
       this.setState(
         {
           stringUptoLimit: this.state.stringUptoLimit.slice(
@@ -114,7 +111,7 @@ class TextAreaComponent extends Component {
 
   render() {
     return (
-      <div className="textAreaComponent">
+      <div className={this.props.className}>
         <Icon
           type="smile"
           onClick={this.toggleEmojiPicker}
@@ -134,7 +131,7 @@ class TextAreaComponent extends Component {
           }
           placeholder={this.props.placeholder}
           name={this.props.name}
-          value={this.state.stringUptoLimit}
+          value={this.props.value}
           onFocus={this.hidePicker}
           id="textarea"
           readOnly={this.state.disabled}

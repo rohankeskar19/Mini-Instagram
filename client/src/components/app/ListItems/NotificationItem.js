@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 const NotificationItem = ({
   profileUrl,
   title,
-  thumbnailUrl,
+  postImageUrl,
   createdAt,
   username,
   postId
@@ -26,9 +26,9 @@ const NotificationItem = ({
         )}
 
         {title && <p className="notificationTitle">{title}</p>}
-        {thumbnailUrl && (
+        {postImageUrl && (
           <img
-            src={thumbnailUrl}
+            src={postImageUrl}
             alt="notification thumbnail"
             className="notificationThumbnail"
           />

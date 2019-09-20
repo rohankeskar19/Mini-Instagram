@@ -5,21 +5,23 @@ import {
   followUser,
   unfollowUser
 } from "../../store/actions/usersActions";
-import { Button } from "antd";
-import Gallery from "./Gallery";
+import { Button, Icon } from "antd";
+import Gallery from "../common/Gallery";
 
 export class UserDetails extends Component {
   state = {
     user: this.props.userDetails,
     userData: this.props.userData,
     followingUser: this.props.followingUser,
-    unfollowingUser: this.props.unfollowingUser
+    unfollowingUser: this.props.unfollowingUser,
+    loading: true
   };
 
   componentDidUpdate(prevProps, prevState, snapshot) {
     if (prevProps.userDetails !== this.props.userDetails) {
       this.setState({
-        user: this.props.userDetails
+        user: this.props.userDetails,
+        loading: false
       });
     }
     if (prevProps.userData !== this.props.userData) {
@@ -56,10 +58,11 @@ export class UserDetails extends Component {
     this.props.unfollowUser(user.user_id);
   };
   render() {
-    const { user, userData } = this.state;
-    console.log(user);
-    //console.log(user.following.indexOf(userData.user_id));
-    return user ? (
+    const { user, userData, loading } = this.state;
+
+    return loading ? (
+      <Icon type="loading" className="center" />
+    ) : user ? (
       <div className="userDetails">
         <div className="container">
           <div className="profile">

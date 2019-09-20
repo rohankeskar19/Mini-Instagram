@@ -3,15 +3,14 @@ import setAuthToken from "../../utils/setAuthToken";
 import jwtDecode from "jwt-decode";
 import { setCurrentUser } from "./usersActions";
 
+// Login user with email
 export const loginUserWithEmail = (userData, history) => {
   return (dispatch, getState) => {
-    console.log(userData);
     Axios.post("/api/user/login", {
       email: userData.loginId,
       password: userData.loginPassword
     })
       .then(res => {
-        console.log(res);
         const { token } = res.data;
 
         localStorage.setItem("user", token);
@@ -24,22 +23,20 @@ export const loginUserWithEmail = (userData, history) => {
           type: "LOGIN_USER",
           payload: {
             user: decoded,
-            isAuthenticated: true,
-            token
+            isAuthenticated: true
           }
         });
-        setCurrentUser(history);
+        dispatch(setCurrentUser(history));
       })
       .catch(err => {
-        console.log(err.response);
         dispatch({ type: "GET_ERRORS", payload: err.response.data });
       });
   };
 };
 
+// Login user with username
 export const loginUserWithUsername = (userData, history) => {
   return (dispatch, getState) => {
-    console.log(userData);
     Axios.post("/api/user/login", {
       username: userData.loginId,
       password: userData.loginPassword
@@ -57,8 +54,7 @@ export const loginUserWithUsername = (userData, history) => {
           type: "LOGIN_USER",
           payload: {
             user: decoded,
-            isAuthenticated: true,
-            token
+            isAuthenticated: true
           }
         });
         dispatch(setCurrentUser(history));
@@ -99,5 +95,6 @@ export const logoutUser = history => {
     history.push("/home-page");
     dispatch({ type: "LOGOUT_USER" });
     dispatch({ type: "CLEAR_USER" });
+    dispatch({ type: "CLEAR_POST_DATA" });
   };
 };
