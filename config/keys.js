@@ -3,6 +3,6 @@ module.exports = {
   saltRounds: 10,
   secret: "ahsfk1924usnfjkhafs194y!#$!@39r214nsf",
   tokenDuration: "1h",
-  accesKey: "AKIAJWWK3YNANWHHY27A",
-  secretAccessKey: "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"
+  accesKey: "AKIAVLCAOPF57L6Z7AX2",
+  secretAccessKey: "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"
 };
